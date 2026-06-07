@@ -17,6 +17,18 @@ function formatVND(value) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 }
 
+// UUID Generator for safe client-side ID assignment without RLS SELECT policy requirements
+function generateUUID() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 // Fallback images if storage link is empty
 const fallbackImages = {
   'gia-tien': 'https://images.unsplash.com/photo-1549417229-aa67d3263c09?auto=format&fit=crop&q=80&w=600',
@@ -259,11 +271,14 @@ bookingForm.addEventListener('submit', async (e) => {
   submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi yêu cầu...`;
 
   try {
+    const bookingId = generateUUID();
+
     // 1. Insert into yn_bookings
-    const { data: booking, error: bookErr } = await supabaseClient
+    const { error: bookErr } = await supabaseClient
       .from('yn_bookings')
       .insert([
         {
+          id: bookingId,
           customer_name: name,
           customer_phone: phone,
           customer_email: email || null,
@@ -271,15 +286,9 @@ bookingForm.addEventListener('submit', async (e) => {
           event_address: address,
           notes: notes || null
         }
-      ])
-      .select();
+      ]);
 
     if (bookErr) throw bookErr;
-    if (!booking || booking.length === 0) {
-      throw new Error('Không nhận được dữ liệu phản hồi sau khi lưu lịch hẹn.');
-    }
-
-    const bookingId = booking[0].id;
 
     // 2. Insert line items
     const lineItems = selectedServices.map(s => ({
