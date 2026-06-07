@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yến Nhi Wedding Studio - Trang Trí Gia Tiên & Rạp Cưới Trọn Gói</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Yến Nhi Wedding chuyên dịch vụ trang trí gia tiên, rạp cưới, mâm tráp quả rồng phượng, xe hoa cưới và cho thuê xe 16 chỗ tại Việt Nam. Uy tín, tinh xảo, trọn gói.">
+  <meta name="keywords" content="trang trí gia tiên, rạp cưới yến nhi, mâm tráp ăn hỏi rồng phượng, thuê xe hoa, thuê xe 16 chỗ cưới hỏi">
+  
+  <!-- Google Fonts: Playfair Display & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- ==========================================================
+       1. Top Header & Navigation
+       ========================================================== -->
+  <header class="main-header">
+    <div class="container header-container">
+      <div class="logo">
+        <a href="/" class="logo-text">
+          Yến Nhi <span class="logo-sub">Wedding</span>
+        </a>
+      </div>
+      
+      <nav class="nav-bar" id="navBar">
+        <a href="#trang-chu" class="nav-link active">Trang Chủ</a>
+        <a href="#dich-vu" class="nav-link">Dịch Vụ</a>
+        <a href="#phong-tuc" class="nav-link">Phong Tục Cưới</a>
+        <a href="#dat-lich" class="nav-link">Đặt Lịch Thuê</a>
+        <a href="#lien-he" class="nav-link">Liên Hệ</a>
+      </nav>
+      
+      <div class="nav-actions">
+        <a href="#dat-lich" class="btn btn-primary btn-sm">Đặt Lịch Ngay</a>
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================
+       2. Hero Banner Section
+       ========================================================== -->
+  <section class="hero-section" id="trang-chu">
+    <div class="hero-overlay"></div>
+    <div class="container hero-container">
+      <div class="hero-content">
+        <h3 class="hero-subtitle">Mỹ Thuật Cưới Hỏi Truyền Thống</h3>
+        <h1 class="hero-title">Trang Trí Gia Tiên & Rạp Cưới Trọn Gói</h1>
+        <p class="hero-description">
+          Mang đến không gian gia tiên trang trọng ấm cúng, nhà rạp lụa mềm mại cùng mâm quả rồng phượng kết tay tinh xảo. Đồng hành cùng ngày hạnh phúc trăm năm của đôi bạn.
+        </p>
+        <div class="hero-buttons">
+          <a href="#dich-vu" class="btn btn-primary btn-lg">Xem Báo Giá</a>
+          <a href="#phong-tuc" class="btn btn-outline btn-lg">Khám Phá Phong Tục</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       3. Quick Features / Custom Values
+       ========================================================== -->
+  <section class="features-section">
+    <div class="container">
+      <div class="grid grid-4">
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fa-solid fa-hands-praying"></i>
+          </div>
+          <h3 class="feature-title">Trang Trí Gia Tiên</h3>
+          <p class="feature-text">Mẫu thờ gia tiên đỏ trắng truyền thống, hoành tráng đầy đủ lư đồng hương hoa quả.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fa-solid fa-house-chimney-window"></i>
+          </div>
+          <h3 class="feature-title">Rạp Cưới & Cổng Hoa</h3>
+          <p class="feature-text">Khung rạp Chiffon cao cấp, thả voan lụa bồng bềnh kết hợp cổng hoa thiết kế riêng biệt.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fa-solid fa-dragon"></i>
+          </div>
+          <h3 class="feature-title">Tráp Rồng Phượng</h3>
+          <p class="feature-text">Mâm ăn hỏi kết đôi rồng phượng tinh xảo chầu trầu cau cưới, biểu tượng phu thê hòa hợp.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fa-solid fa-car-side"></i>
+          </div>
+          <h3 class="feature-title">Thuê Xe Hoa & Xe Họ</h3>
+          <p class="feature-text">Dòng xe hoa kết hoa cưới sang trọng đưa đón cô dâu cùng các xe 16 chỗ đưa đón họ hàng chu đáo.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       4. Services Showcase (Dynamic Catalog)
+       ========================================================== -->
+  <section class="services-section" id="dich-vu">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Bảng Giá Các Gói Dịch Vụ</h2>
+        <div class="section-divider"></div>
+        <p class="section-subtitle">
+          Tất cả sản phẩm đều được trang trí tinh xảo bằng thủ công nghệ thuật. Tông màu chủ đạo Đỏ Trắng mang may mắn bình an.
+        </p>
+      </div>
+
+      <!-- Categories Filter Tabs -->
+      <div class="category-tabs" id="categoryTabs">
+        <button class="tab-btn active" data-category="all">Tất cả</button>
+        <!-- Categories populated dynamically -->
+      </div>
+
+      <!-- Services Grid -->
+      <div class="services-grid" id="servicesGrid">
+        <div class="loading-spinner">
+          <i class="fa-solid fa-spinner fa-spin"></i> Đang tải danh sách dịch vụ từ cơ sở dữ liệu...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       5. Vietnamese Wedding Custom Detail Section
+       ========================================================== -->
+  <section class="customs-section" id="phong-tuc">
+    <div class="container customs-container">
+      <div class="customs-img">
+        <!-- Showcase representing Tráp Rồng Phượng decoration details -->
+        <div class="customs-decoration-card">
+          <div class="dragon-phoenix-seal">
+            <i class="fa-solid fa-heart"></i>
+            <span>Song Hỷ Lâm Môn</span>
+          </div>
+          <h3 class="customs-card-title">Ý Nghĩa Rồng Phượng & Trầu Cau</h3>
+          <p class="customs-card-text">
+            Trong đám hỏi Việt Nam, trầu cau là sính lễ bắt buộc: <strong>"Miếng trầu là đầu câu chuyện"</strong>. Mâm tráp Rồng Phượng nghệ thuật kết từ lá dứa, cau xanh và trái ớt đỏ biểu trưng cho sức mạnh nam giới (Rồng) và vẻ đẹp dịu hiền nữ giới (Phượng), cầu chúc cặp đôi trăm năm hạnh phúc, phú quý cát tường.
+          </p>
+        </div>
+      </div>
+      
+      <div class="customs-content">
+        <h2 class="customs-title">Văn Hóa Gia Tiên Trong Ngày Cưới</h2>
+        <div class="section-divider left"></div>
+        <p class="customs-para">
+          Lễ Gia Tiên là nghi thức thiêng liêng nhất trong ngày cưới của người Việt. Đây là thời khắc đôi tân hôn thắp nén hương thơm trước bàn thờ tổ tiên để báo cáo về gia đình mới và cầu xin sự chúc phúc chở che.
+        </p>
+        <p class="customs-para">
+          Màu <strong>Đỏ Nhạt (Hồng đỏ)</strong> biểu trưng cho hỷ sự nồng ấm, may mắn tài lộc, kết hợp với <strong>Trắng tinh khôi</strong> tạo nên vẻ thanh tao trang trọng. Yến Nhi Wedding gìn giữ trọn vẹn nét văn hóa thờ cúng truyền thống qua thiết kế tinh tế: lư hương sáng bóng, cặp nến Song Hỷ chữ vàng chói lọi, bình vạn thọ tươi tắn thắm thiết.
+        </p>
+        <ul class="customs-list">
+          <li><i class="fa-solid fa-circle-check"></i> Đảm bảo đúng chuẩn nghi thức ăn hỏi Bắc - Trung - Nam</li>
+          <li><i class="fa-solid fa-circle-check"></i> Sử dụng 100% nguyên liệu tự nhiên tươi xanh cho cổng hoa dừa, tráp quả</li>
+          <li><i class="fa-solid fa-circle-check"></i> Thiết kế điều chỉnh linh hoạt theo kích thước phòng khách từng gia đình</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       6. Booking / Inquiry Form Section
+       ========================================================== -->
+  <section class="booking-section" id="dat-lich">
+    <div class="container">
+      <div class="booking-wrapper">
+        
+        <div class="booking-info">
+          <h2 class="booking-info-title">Đăng Ký Đặt Lịch & Tư Vấn</h2>
+          <p class="booking-info-desc">
+            Vui lòng điền thông tin của bạn. Đội ngũ Yến Nhi Wedding sẽ liên hệ ngay qua điện thoại hoặc Zalo trong vòng 15 phút để khảo sát địa hình dựng rạp và tư vấn chi tiết.
+          </p>
+          
+          <div class="booking-contact-details">
+            <div class="contact-item">
+              <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+              <div>
+                <h4>Hotline Tư Vấn</h4>
+                <p>0909.123.456 (Zalo)</p>
+              </div>
+            </div>
+            
+            <div class="contact-item">
+              <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+              <div>
+                <h4>Địa Chỉ Văn Phòng</h4>
+                <p>123 Đường Song Hỷ, Phường Yến Nhi, TP. Hồ Chí Minh</p>
+              </div>
+            </div>
+            
+            <div class="contact-item">
+              <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
+              <div>
+                <h4>Giờ Làm Việc</h4>
+                <p>07:00 - 21:00 (Tất cả các ngày trong tuần)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="booking-form-container">
+          <form id="bookingForm" class="booking-form">
+            <h3 class="form-title">Điền Thông Tin Yêu Cầu</h3>
+            
+            <div class="form-group">
+              <label for="custName"><i class="fa-solid fa-user"></i> Họ và Tên <span class="required">*</span></label>
+              <input type="text" id="custName" placeholder="Ví dụ: Nguyễn Văn A" required>
+            </div>
+            
+            <div class="grid grid-2" style="gap: 1.5rem; margin-bottom: 1.5rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="custPhone"><i class="fa-solid fa-phone"></i> Số Điện Thoại <span class="required">*</span></label>
+                <input type="tel" id="custPhone" placeholder="Ví dụ: 0909123456" required>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="custEmail"><i class="fa-solid fa-envelope"></i> Email (Nếu có)</label>
+                <input type="email" id="custEmail" placeholder="vd: anhnguyen@gmail.com">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="eventDate"><i class="fa-solid fa-calendar-days"></i> Ngày Tổ Chức (Ngày Làm Lễ) <span class="required">*</span></label>
+              <input type="date" id="eventDate" required>
+            </div>
+
+            <div class="form-group">
+              <label for="eventAddress"><i class="fa-solid fa-house"></i> Địa Chỉ Tổ Chức (Nơi dựng rạp / gia tiên) <span class="required">*</span></label>
+              <input type="text" id="eventAddress" placeholder="Số nhà, Tên đường, Quận/Huyện, Tỉnh thành" required>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-cart-shopping"></i> Dịch Vụ Đã Chọn</label>
+              <div class="selected-items-box" id="selectedItemsBox">
+                Chưa chọn dịch vụ nào. Hãy click "Thêm vào danh sách" trên các thẻ dịch vụ ở trên!
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="bookingNotes"><i class="fa-solid fa-pen-clip"></i> Yêu Cầu Chi Tiết Khác (Nếu có)</label>
+              <textarea id="bookingNotes" rows="3" placeholder="Ví dụ: Cổng dừa vẽ thêm chữ Vu Quy, Rạp cần lắp thêm 2 quạt hơi nước công suất lớn..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn">
+              <i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu Ngay
+            </button>
+            
+            <div id="formStatus" class="form-status"></div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       7. Elegant Footer
+       ========================================================== -->
+  <footer class="main-footer" id="lien-he">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <h3 class="footer-logo">Yến Nhi <span class="logo-sub">Wedding</span></h3>
+        <p class="footer-desc">
+          Thương hiệu trang trí cưới hỏi trọn gói hàng đầu. Tận tâm - Uy tín - Tinh xảo trong từng khâu thiết kế phông màn gia tiên, cổng hoa cưới hỏi.
+        </p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="Youtube"><i class="fa-brands fa-youtube"></i></a>
+          <a href="#" aria-label="Tiktok"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4 class="footer-title">Dịch Vụ Cung Cấp</h4>
+        <ul class="footer-links">
+          <li><a href="#dich-vu">Trang Trí Gia Tiên</a></li>
+          <li><a href="#dich-vu">Cho Thuê Rạp Cưới</a></li>
+          <li><a href="#dich-vu">Cổng Hoa Ngày Cưới</a></li>
+          <li><a href="#dich-vu">Mâm Tráp Rồng Phượng</a></li>
+          <li><a href="#dich-vu">Xe Hoa & Xe 16 Chỗ</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-title">Hỗ Trợ & Chính Sách</h4>
+        <ul class="footer-links">
+          <li><a href="#lien-he">Liên Hệ Tư Vấn</a></li>
+          <li><a href="#dat-lich">Đăng Ký Đặt Lịch</a></li>
+          <li><a href="#phong-tuc">Phong Tục Nghi Lễ</a></li>
+          <li><a href="#">Bảo Mật Thông Tin</a></li>
+          <li><a href="#">Quy Trình Hoàn Tiền</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col contact-col">
+        <h4 class="footer-title">Thông Tin Liên Hệ</h4>
+        <p><i class="fa-solid fa-phone"></i> 0909.123.456 (Zalo)</p>
+        <p><i class="fa-solid fa-envelope"></i> yennhiwedding@gmail.com</p>
+        <p><i class="fa-solid fa-location-dot"></i> 123 Đường Song Hỷ, Phường Yến Nhi, TP. Hồ Chí Minh</p>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="container bottom-container">
+        <p>&copy; 2026 Yến Nhi Wedding Studio. Thiết kế và phát triển trọn gói với màu đỏ may mắn.</p>
+        <a href="#trang-chu" class="scroll-top-btn"><i class="fa-solid fa-arrow-up"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App logic script -->
+  <script src="/app.js"></script>
+</body>
+</html>
