@@ -167,7 +167,7 @@ function renderServices(categoryId) {
       <div class="service-card" data-id="${service.id}">
         ${service.is_featured ? `<span class="service-badge">Phổ Biến</span>` : ''}
         <div class="service-img-wrapper">
-          <img class="service-img" src="${imgUrl}" alt="${service.name}" onerror="this.src='${fallbackImages[slug]}'">
+          <img class="service-img" src="${imgUrl}" alt="${service.name}" onerror="this.onerror=null; this.src='${fallbackImages[slug]}';">
         </div>
         <div class="service-body">
           <h3 class="service-name">${service.name}</h3>
