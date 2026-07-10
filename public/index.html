@@ -433,6 +433,19 @@
   </section>
 
   <!-- ==========================================================
+       6b. Floating Booking Summary Widget
+       ========================================================== -->
+  <div id="bookingFloatWidget" class="booking-float-widget hidden" style="position: fixed; bottom: 1.5rem; right: 1.5rem; background-color: var(--primary); color: var(--bg-white); padding: 0.8rem 1.5rem; border-radius: 50px; box-shadow: 0 8px 25px rgba(211, 47, 47, 0.4); display: flex; align-items: center; gap: 1rem; z-index: 999; cursor: pointer;">
+    <div style="font-weight: 600;">
+      <i class="fa-solid fa-cart-shopping"></i> Đã chọn: <span id="floatSelectedCount">0</span> gói
+    </div>
+    <div style="width: 1px; height: 20px; background-color: rgba(255,255,255,0.3);"></div>
+    <a href="#dat-lich" style="color: #fff; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;">
+      Đặt Lịch Ngay <i class="fa-solid fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <!-- ==========================================================
        7. Elegant Footer
        ========================================================== -->
   <footer class="main-footer" id="lien-he">

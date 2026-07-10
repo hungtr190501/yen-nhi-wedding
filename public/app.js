@@ -561,22 +561,23 @@ function updateSelectedServicesUI() {
   if (!selectedItemsBox) return;
 
   if (selectedServices.length === 0) {
-    selectedItemsBox.innerHTML = `Chưa chọn dịch vụ nào. Hãy truy cập trang <a href="/san-pham.html" style="color: var(--primary); font-weight: 700;">Dịch Vụ & Combo</a> để chọn gói phù hợp.`;
+    selectedItemsBox.innerHTML = `Chưa chọn dịch vụ nào. Hãy click <strong>"Chọn Dịch Vụ này"</strong> trên các thẻ dịch vụ hoặc truy cập trang <a href="/san-pham.html" style="color: var(--primary); font-weight: 700;">Dịch Vụ & Combo</a>.`;
     return;
   }
 
   let total = 0;
-  let html = `<div style="display: flex; flex-wrap: wrap;">`;
-  
+  let html = `<div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem;">`;
+
   selectedServices.forEach(item => {
-    total += Number(item.price);
+    const effectivePrice = Number(item.discount_price || item.price);
+    total += effectivePrice;
     html += `
       <span class="selected-item-tag">
-        ${item.name} (${formatVND(item.price)})
-        <i class="fa-solid fa-circle-xmark" onclick="toggleSelectService('${item.id}')"></i>
+        ${item.name} (${formatVND(effectivePrice)})
+        <i class="fa-solid fa-circle-xmark" onclick="toggleSelectService('${item.id}')" style="cursor:pointer;"></i>
       </span>`;
   });
-  
+
   html += `</div>`;
   html += `
     <div class="total-estimate-box">
@@ -747,15 +748,16 @@ function renderMiniCart() {
   let total = 0;
   let html = '';
   selectedServices.forEach(item => {
-    total += Number(item.price);
+    const effectivePrice = Number(item.discount_price || item.price);
+    total += effectivePrice;
     html += `
-      <div class="mini-cart-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px dashed var(--border-light); padding-bottom: 0.5rem; margin-bottom: 0.5rem; gap: 0.5rem;">
-        <div style="display:flex; flex-direction:column; gap:0.2rem;">
-          <span style="font-weight:600; color:var(--text-main); font-size:0.85rem; display:block; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</span>
-          <span style="color:var(--primary); font-size:0.8rem; font-weight:700;">${formatVND(Number(item.price))}</span>
+      <div class="mini-cart-item">
+        <div class="mini-cart-item-info">
+          <span class="mini-cart-item-name">${item.name}</span>
+          <span class="mini-cart-item-price">${formatVND(effectivePrice)}</span>
         </div>
-        <button class="mini-cart-item-remove" onclick="event.stopPropagation(); toggleSelectService('${item.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding: 0.25rem; transition:color 0.2s;" title="Xóa khỏi giỏ hàng">
-          <i class="fa-solid fa-trash-can" style="font-size:0.85rem;"></i>
+        <button class="mini-cart-item-remove" onclick="event.stopPropagation(); toggleSelectService('${item.id}')" title="Xóa khỏi giỏ hàng">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
     `;

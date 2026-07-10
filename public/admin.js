@@ -675,39 +675,49 @@ function openAddServiceModal() {
 }
 
 window.openEditServiceModal = function(id) {
-  const srv = allServices.find(s => s.id === id);
-  if (!srv) return;
+  const srv = allServices.find(s => String(s.id) === String(id));
+  if (!srv) {
+    console.error('[Admin] Service not found for edit, id:', id);
+    alert('Không tìm thấy dịch vụ. Vui lòng tải lại trang và thử lại.');
+    return;
+  }
+
+  // Reset form to clear previous state, then set ID
+  serviceForm.reset();
+  srvFeaturesList.innerHTML = '';
+  srvImagePreview.classList.add('hidden');
+  srvImagePreview.src = '';
 
   document.getElementById('modalTitle').textContent = 'Sửa Thông Tin Dịch Vụ';
   document.getElementById('srvId').value = srv.id;
-  document.getElementById('srvName').value = srv.name;
-  srvCategorySelect.value = srv.category_id || '';
-  document.getElementById('srvPrice').value = srv.price;
+  document.getElementById('srvName').value = srv.name || '';
+  document.getElementById('srvPrice').value = srv.price || '';
   document.getElementById('srvDiscountPrice').value = srv.discount_price || '';
   document.getElementById('srvUnit').value = srv.unit || 'gói';
   document.getElementById('srvPromoText').value = srv.promo_text || '';
-  srvImageUrl.value = srv.image_url || '';
-  document.getElementById('srvIsFeatured').checked = !!srv.is_featured;
   document.getElementById('srvDescriptionText').value = srv.description || '';
+  document.getElementById('srvIsFeatured').checked = !!srv.is_featured;
 
-  if (typeof srvSunEditor !== 'undefined' && srvSunEditor) {
-    srvSunEditor.setContents(srv.content || '');
-  }
+  // Set category after reset (reset clears select to first option)
+  srvCategorySelect.value = srv.category_id || '';
 
+  srvImageUrl.value = srv.image_url || '';
   if (srv.image_url) {
     srvImagePreview.src = srv.image_url;
     srvImagePreview.classList.remove('hidden');
-  } else {
-    srvImagePreview.classList.add('hidden');
-    srvImagePreview.src = '';
+  }
+
+  if (typeof srvSunEditor !== 'undefined' && srvSunEditor) {
+    try {
+      srvSunEditor.setContents(srv.content || '');
+    } catch (e) {
+      console.warn('[Admin] SunEditor setContents failed:', e);
+    }
   }
 
   // Populate features list inputs
-  srvFeaturesList.innerHTML = '';
   if (srv.features && srv.features.length > 0) {
-    srv.features.forEach(f => {
-      addFeatureInputRow(f);
-    });
+    srv.features.forEach(f => addFeatureInputRow(f));
   } else {
     addFeatureInputRow('');
   }

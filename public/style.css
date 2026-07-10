@@ -2255,3 +2255,262 @@ a {
     right: -40px;
   }
 }
+
+/* ================================================================
+   UI Consistency & Polish Improvements
+   ================================================================ */
+
+/* Cart badge pulse when non-zero */
+@keyframes badgePulse {
+  0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(211, 47, 47, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+}
+.header-cart-count {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.header-cart-count:not(:empty) {
+  animation: badgePulse 2s infinite;
+}
+
+/* Better header cart button hover */
+.header-cart-icon-btn {
+  transition: color 0.2s ease, transform 0.2s ease;
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem !important;
+}
+.header-cart-icon-btn:hover {
+  color: var(--primary) !important;
+  transform: scale(1.1);
+}
+
+/* Floating widget animation */
+.booking-float-widget {
+  animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes slideInRight {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.booking-float-widget:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 12px 30px rgba(211, 47, 47, 0.5) !important;
+}
+
+/* Gallery hover effect fix */
+.gallery-item:hover img {
+  transform: scale(1.06);
+}
+.gallery-item:hover .gallery-overlay {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* Mini-cart item improved layout */
+.mini-cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--border-light);
+}
+.mini-cart-item:last-child {
+  border-bottom: none;
+}
+.mini-cart-item-name {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--text-main);
+  display: block;
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mini-cart-item-price {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: block;
+}
+.mini-cart-item-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+.mini-cart-item-remove:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* Service card image zoom on hover */
+.service-card:hover .service-img {
+  transform: scale(1.08);
+}
+
+/* Better tab button active state */
+.tab-btn.active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.25);
+}
+
+/* Admin modal - wider on large screens, better scroll */
+@media (min-width: 900px) {
+  .modal-card {
+    max-width: 750px;
+  }
+}
+.modal-card::-webkit-scrollbar {
+  width: 5px;
+}
+.modal-card::-webkit-scrollbar-track {
+  background: var(--bg-light);
+}
+.modal-card::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 4px;
+}
+.modal-card::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Admin services table row actions spacing */
+.admin-services-table td:last-child {
+  white-space: nowrap;
+}
+
+/* Booking section form input improved focus */
+.booking-form .form-group input:focus,
+.booking-form .form-group textarea:focus {
+  border-color: var(--primary);
+  background-color: var(--bg-white);
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+  outline: none;
+}
+
+/* Selected item tag remove icon hover */
+.selected-item-tag i.fa-circle-xmark {
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.selected-item-tag i.fa-circle-xmark:hover {
+  color: var(--primary-hover);
+  transform: scale(1.2);
+}
+
+/* Image upload preview sizing */
+.image-upload-preview img {
+  max-height: 130px;
+  border-radius: 8px;
+  border: 2px solid var(--border-light);
+  object-fit: cover;
+  display: block;
+  margin-top: 0.5rem;
+}
+.image-upload-wrapper {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.image-upload-wrapper input[type="text"] {
+  flex: 1;
+  min-width: 180px;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.image-upload-wrapper input[type="text"]:focus {
+  border-color: var(--primary);
+}
+
+/* Dynamic feature input rows */
+.feature-input-row input {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.feature-input-row input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.08);
+}
+
+/* Admin nav tab responsive wrapping */
+@media (max-width: 640px) {
+  .admin-nav-tabs {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .admin-nav-tab {
+    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Promo tag on service card */
+.service-promo-tag {
+  margin-bottom: 0.75rem;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better service grid gap on mobile */
+@media (max-width: 600px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+}
+
+/* Footer link hover smooth */
+.footer-links li a {
+  transition: color 0.2s ease, padding-left 0.2s ease;
+}
+
+/* Admin stat card icon size */
+.stat-icon {
+  flex-shrink: 0;
+}
+
+/* Checkbox group in modal label */
+.checkbox-group label {
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* btn-delete in admin table */
+.btn-delete {
+  border-color: #fee2e2 !important;
+  color: var(--primary) !important;
+}
+.btn-delete:hover {
+  background-color: var(--primary) !important;
+  color: #fff !important;
+  border-color: var(--primary) !important;
+}
