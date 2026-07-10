@@ -178,47 +178,34 @@
   </section>
 
   <!-- ==========================================================
-       4. Services Showcase (Dynamic Catalog)
-       ========================================================== -->
-  <!-- ==========================================================
-       4. Services Showcase (Teaser linking to separate Products page)
+       4. Services Showcase (Dynamic Catalog with View More link)
        ========================================================== -->
   <section class="services-section" id="dich-vu">
     <div class="container">
-      <div class="section-header" style="animation: fadeIn 0.8s ease-in-out;">
+      <div class="section-header">
         <h2 class="section-title">Các Gói Dịch Vụ Cưới Hỏi</h2>
         <div class="section-divider"></div>
         <p class="section-subtitle">
-          Yến Nhi Wedding cung cấp đa dạng gói trang trí cưới hỏi nghệ thuật lẻ hoặc các gói Combo ưu đãi lớn.
+          Yến Nhi Wedding cung cấp đa dạng gói trang trí lẻ hoặc các gói Combo ưu đãi lớn.
         </p>
       </div>
 
-      <div class="services-teaser-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-        <div class="teaser-card" style="background: #fff; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center; border: 1px solid var(--border-light); transition: var(--transition);">
-          <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-house-chimney-window"></i></div>
-          <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-main);">Trang Trí Gia Tiên</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Phông màn backdrop đỏ hoa tươi, bàn thờ gia tiên lư đồng nghiêm trang ấm cúng.</p>
-        </div>
-        <div class="teaser-card" style="background: #fff; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center; border: 1px solid var(--border-light); transition: var(--transition);">
-          <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-tent"></i></div>
-          <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-main);">Rạp Cưới & Cổng Hoa</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Khung rạp Chiffon rủ lụa mềm mại thắp đèn ấm áp, cổng hoa chào mừng sang trọng.</p>
-        </div>
-        <div class="teaser-card" style="background: #fff; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center; border: 1px solid var(--border-light); transition: var(--transition);">
-          <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-gift"></i></div>
-          <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-main);">Mâm Tráp Rồng Phượng</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Bộ tráp trầu cau, hoa quả kết hình Rồng Phượng tinh xảo mang may mắn cát tường.</p>
-        </div>
-        <div class="teaser-card" style="background: #fff; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center; border: 1px solid var(--border-light); transition: var(--transition);">
-          <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-car"></i></div>
-          <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-main);">Xe Hoa & Xe Đưa Đón</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Cho thuê xe hoa cao cấp, xe 16 chỗ đưa đón gia đình dòng họ chu đáo đúng giờ.</p>
+      <!-- Categories Filter Tabs -->
+      <div class="category-tabs" id="categoryTabs">
+        <button class="tab-btn active" data-category="all">Tất cả</button>
+        <!-- Categories populated dynamically -->
+      </div>
+
+      <!-- Services Grid -->
+      <div class="services-grid" id="servicesGrid">
+        <div class="loading-spinner">
+          <i class="fa-solid fa-spinner fa-spin"></i> Đang tải danh sách dịch vụ từ cơ sở dữ liệu...
         </div>
       </div>
 
-      <div style="text-align: center;">
+      <div style="text-align: center; margin-top: 3.5rem;">
         <a href="/san-pham.html" class="btn btn-primary btn-lg" style="box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3); font-weight: 700;">
-          <i class="fa-solid fa-list-ul"></i> Xem Báo Giá & Combo Chi Tiết
+          <i class="fa-solid fa-list-ul"></i> Xem Thêm Dịch Vụ & Combo Trọn Gói <i class="fa-solid fa-arrow-right"></i>
         </a>
       </div>
     </div>

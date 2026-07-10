@@ -229,7 +229,9 @@ async function loadCatalog() {
     renderCatalog('all');
     setupCatalogSearch();
   } else {
-    // If we are on the homepage, render the selection widget in case selections exist
+    // Render dynamic categories and services list on the homepage
+    renderHomepageTabs();
+    renderHomepageServices('all');
     updateSelectedServicesUI();
   }
 }
@@ -260,6 +262,53 @@ function renderCatalogTabs() {
       renderCatalog(catId);
     });
   });
+}
+
+// Render categories filter tabs on the homepage
+function renderHomepageTabs() {
+  const tabsContainer = document.getElementById('categoryTabs');
+  if (!tabsContainer) return;
+
+  let html = `<button class="tab-btn active" data-category="all">Tất cả</button>`;
+  allCategories.forEach(cat => {
+    html += `<button class="tab-btn" data-category="${cat.id}">${cat.name}</button>`;
+  });
+  tabsContainer.innerHTML = html;
+
+  // Add click handlers
+  tabsContainer.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabsContainer.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      const catId = btn.getAttribute('data-category');
+      renderHomepageServices(catId);
+    });
+  });
+}
+
+// Render dynamic services list on the homepage
+function renderHomepageServices(categoryId) {
+  const grid = document.getElementById('servicesGrid');
+  if (!grid) return;
+
+  const filtered = categoryId === 'all' 
+    ? allServices 
+    : allServices.filter(s => s.category_id === categoryId);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="loading-spinner" style="grid-column: 1/-1;">
+        <i class="fa-solid fa-circle-info"></i> Không tìm thấy dịch vụ nào thuộc danh mục này.
+      </div>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(srv => {
+    html += renderServiceCardHtml(srv);
+  });
+  grid.innerHTML = html;
 }
 
 // Hook up search filter on Products page
@@ -453,6 +502,10 @@ window.toggleSelectService = function(itemId) {
     const activeTab = document.querySelector('#catalogCategoryTabs .tab-btn.active');
     const catId = activeTab ? activeTab.getAttribute('data-category') : 'all';
     renderCatalog(catId);
+  } else {
+    const activeTab = document.querySelector('#categoryTabs .tab-btn.active');
+    const catId = activeTab ? activeTab.getAttribute('data-category') : 'all';
+    renderHomepageServices(catId);
   }
 };
 
