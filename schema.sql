@@ -1,3 +1,9 @@
+-- Create dummy auth schema and role function if not exists (for standard Postgres compatibility)
+CREATE SCHEMA IF NOT EXISTS auth;
+CREATE OR REPLACE FUNCTION auth.role() RETURNS text AS $$
+  SELECT 'authenticated'::text;
+$$ LANGUAGE sql STABLE;
+
 -- ==========================================================
 -- 1. Create Tables
 -- ==========================================================

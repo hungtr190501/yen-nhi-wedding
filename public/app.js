@@ -42,19 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupNavbar();
   
   try {
-    // 1. Fetch public Supabase configuration from Express server
-    const configRes = await fetch('/api/config');
-    const config = await configRes.json();
-    
-    if (!config.supabaseUrl || !config.supabaseAnonKey) {
-      showError('Lỗi cấu hình: Thiếu thông tin kết nối Supabase.');
-      return;
-    }
-    
-    // 2. Initialize Supabase client
-    supabaseClient = supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
-    
-    // 3. Load catalog data
+    // Load catalog data directly from our Express server API
     await loadCatalog();
   } catch (err) {
     console.error('Initialization failed:', err);
@@ -87,26 +75,17 @@ function setupNavbar() {
   });
 }
 
-// Load categories & services from Supabase
+// Load categories & services from backend APIs
 async function loadCatalog() {
   // Fetch categories
-  const { data: categories, error: catErr } = await supabaseClient
-    .from('yn_categories')
-    .select('*')
-    .order('name');
-    
-  if (catErr) throw catErr;
-  allCategories = categories || [];
+  const catRes = await fetch('/api/categories');
+  if (!catRes.ok) throw new Error('Không thể tải danh mục sản phẩm');
+  allCategories = await catRes.json();
   
   // Fetch services
-  const { data: services, error: servErr } = await supabaseClient
-    .from('yn_services')
-    .select('*')
-    .order('is_featured', { ascending: false })
-    .order('price');
-    
-  if (servErr) throw servErr;
-  allServices = services || [];
+  const servRes = await fetch('/api/services');
+  if (!servRes.ok) throw new Error('Không thể tải danh sách dịch vụ');
+  allServices = await servRes.json();
 
   // Render elements
   renderCategoryTabs();
@@ -245,11 +224,6 @@ function updateSelectedServicesUI() {
 // Form Submission handling
 bookingForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
-  if (!supabaseClient) {
-    showFormError('Kết nối cơ sở dữ liệu chưa sẵn sàng. Vui lòng tải lại trang.');
-    return;
-  }
 
   if (selectedServices.length === 0) {
     showFormError('Vui lòng chọn ít nhất một dịch vụ/gói thuê trước khi gửi.');
@@ -273,36 +247,29 @@ bookingForm.addEventListener('submit', async (e) => {
   try {
     const bookingId = generateUUID();
 
-    // 1. Insert into yn_bookings
-    const { error: bookErr } = await supabaseClient
-      .from('yn_bookings')
-      .insert([
-        {
-          id: bookingId,
-          customer_name: name,
-          customer_phone: phone,
-          customer_email: email || null,
-          event_date: date,
-          event_address: address,
-          notes: notes || null
-        }
-      ]);
+    const bookingPayload = {
+      id: bookingId,
+      customer_name: name,
+      customer_phone: phone,
+      customer_email: email || null,
+      event_date: date,
+      event_address: address,
+      notes: notes || null,
+      services: selectedServices.map(s => s.id)
+    };
 
-    if (bookErr) throw bookErr;
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(bookingPayload)
+    });
 
-    // 2. Insert line items
-    const lineItems = selectedServices.map(s => ({
-      booking_id: bookingId,
-      service_id: s.id,
-      quantity: 1,
-      notes: null
-    }));
-
-    const { error: itemErr } = await supabaseClient
-      .from('yn_booking_items')
-      .insert(lineItems);
-
-    if (itemErr) throw itemErr;
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Lỗi không xác định khi lưu thông tin.');
+    }
 
     // Success styling
     showFormSuccess('Gửi yêu cầu thành công! Chúng tôi sẽ liên hệ Zalo/Hotline của bạn sớm nhất.');
