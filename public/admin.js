@@ -34,6 +34,17 @@ const srvImageUrl = document.getElementById('srvImageUrl');
 const srvImagePreview = document.getElementById('srvImagePreview');
 const srvCategorySelect = document.getElementById('srvCategory');
 
+// Settings Form elements
+const settingsForm = document.getElementById('settingsForm');
+const cfgSiteName = document.getElementById('cfgSiteName');
+const cfgHotlineInput = document.getElementById('cfgHotlineInput');
+const cfgEmailInput = document.getElementById('cfgEmailInput');
+const cfgAddressInput = document.getElementById('cfgAddressInput');
+const cfgWorkingHoursInput = document.getElementById('cfgWorkingHoursInput');
+const cfgMapInput = document.getElementById('cfgMapInput');
+const cfgFooterDescInput = document.getElementById('cfgFooterDescInput');
+const cfgFooterCopyrightInput = document.getElementById('cfgFooterCopyrightInput');
+
 // Currency formatting (VND)
 function formatVND(value) {
   if (value === null || value === undefined || isNaN(value)) return '0 đ';
@@ -50,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   setupNavigation();
   setupServiceModal();
+  setupSettingsPanel();
 });
 
 // Setup Panel Navigation
@@ -70,6 +82,8 @@ function setupNavigation() {
 
       if (targetPanel === 'servicesPanel') {
         loadCatalogData();
+      } else if (targetPanel === 'settingsPanel') {
+        loadSettingsData();
       }
     });
   });
@@ -117,6 +131,7 @@ function showDashboard() {
   adminApp.classList.remove('hidden');
   fetchBookings();
   loadCatalogData();
+  loadSettingsData();
 }
 
 // Fetch bookings from backend
@@ -628,3 +643,67 @@ window.deleteService = async function(id) {
     alert(err.message);
   }
 };
+
+// Load Website settings in admin form
+window.loadSettingsData = async function() {
+  try {
+    const res = await fetch('/api/settings');
+    if (!res.ok) throw new Error('Không thể tải cấu hình website.');
+    const settings = await res.json();
+
+    cfgSiteName.value = settings.site_name || '';
+    cfgHotlineInput.value = settings.hotline || '';
+    cfgEmailInput.value = settings.email || '';
+    cfgAddressInput.value = settings.address || '';
+    cfgWorkingHoursInput.value = settings.working_hours || '';
+    cfgMapInput.value = settings.map_iframe || '';
+    cfgFooterDescInput.value = settings.footer_desc || '';
+    cfgFooterCopyrightInput.value = settings.footer_copyright || '';
+  } catch (err) {
+    console.error('Load settings failed:', err);
+  }
+};
+
+// Setup Settings Form handler
+function setupSettingsPanel() {
+  if (!settingsForm) return;
+  settingsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+
+    const token = localStorage.getItem('yn_admin_token');
+    const settingsPayload = {
+      site_name: cfgSiteName.value.trim(),
+      hotline: cfgHotlineInput.value.trim(),
+      email: cfgEmailInput.value.trim(),
+      address: cfgAddressInput.value.trim(),
+      working_hours: cfgWorkingHoursInput.value.trim(),
+      map_iframe: cfgMapInput.value.trim(),
+      footer_desc: cfgFooterDescInput.value.trim(),
+      footer_copyright: cfgFooterCopyrightInput.value.trim()
+    };
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': token
+        },
+        body: JSON.stringify(settingsPayload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lưu cấu hình thất bại.');
+      alert('Đã lưu cấu hình website thành công!');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalText;
+    }
+  });
+}

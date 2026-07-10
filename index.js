@@ -37,10 +37,37 @@ pool.query('SELECT NOW()', async (err, res) => {
     console.error('[DATABASE] Error connecting to database:', err.message);
   } else {
     console.log('[DATABASE] Connected to database successfully at:', res.rows[0].now);
-    // Run schema migrations to add promotion/discount columns
+    // Run schema migrations to add promotion/discount columns and settings table
     try {
       await pool.query('ALTER TABLE public.yn_services ADD COLUMN IF NOT EXISTS discount_price numeric;');
       await pool.query('ALTER TABLE public.yn_services ADD COLUMN IF NOT EXISTS promo_text text;');
+      
+      // Create settings table
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS public.yn_settings (
+          key text PRIMARY KEY,
+          value text NOT NULL
+        );
+      `);
+      
+      // Seed default settings if empty
+      const checkSettings = await pool.query('SELECT COUNT(*) FROM public.yn_settings');
+      if (Number(checkSettings.rows[0].count) === 0) {
+        const seedQuery = `
+          INSERT INTO public.yn_settings (key, value) VALUES
+          ('site_name', 'Yến Nhi Wedding'),
+          ('hotline', '0909.123.456 (Zalo)'),
+          ('address', 'Kiost số 17 Thống Nhất, Phường Phú Thọ Hoà, TP. Hồ Chí Minh'),
+          ('email', 'yennhiwedding@gmail.com'),
+          ('working_hours', '07:00 - 21:00 (Tất cả các ngày trong tuần)'),
+          ('footer_desc', 'Thương hiệu trang trí cưới hỏi trọn gói hàng đầu. Tận tâm - Uy tín - Tinh xảo trong từng khâu thiết kế phông màn gia tiên, cổng hoa cưới hỏi.'),
+          ('footer_copyright', '© 2026 Yến Nhi Wedding Studio. Thiết kế và phát triển trọn gói với màu đỏ may mắn.'),
+          ('map_iframe', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.467406969566!2d106.63413817579737!3d10.775850959211364!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752ea2db74a3f5%3A0xe54e3d37a85dfcf2!2zMTcgVGjhu5FuZyBOaOG6pXQsIFBow7ogVGjhu40gSG_DoCwgVMOibiBQaMO6LCBI4buTIENow60gTWluaCwgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1720603700000!5m2!1svi!2s');
+        `;
+        await pool.query(seedQuery);
+        console.log('[DATABASE] Seeded default website settings.');
+      }
+      
       console.log('[DATABASE] Database schema migrations completed successfully.');
     } catch (migrationErr) {
       console.error('[DATABASE] Migration error:', migrationErr.message);
@@ -306,6 +333,44 @@ app.delete('/api/admin/services/:id', adminAuth, async (req, res) => {
   } catch (err) {
     console.error('Error deleting service:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Get website settings
+app.get('/api/settings', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT key, value FROM public.yn_settings');
+    const settings = {};
+    result.rows.forEach(row => {
+      settings[row.key] = row.value;
+    });
+    res.json(settings);
+  } catch (err) {
+    console.error('Error fetching settings:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update website settings
+app.patch('/api/admin/settings', adminAuth, async (req, res) => {
+  const settings = req.body;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const [key, value] of Object.entries(settings)) {
+      await client.query(
+        'INSERT INTO public.yn_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value',
+        [key, value]
+      );
+    }
+    await client.query('COMMIT');
+    res.json({ success: true, message: 'Cập nhật cấu hình thành công.' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error updating settings:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 });
 

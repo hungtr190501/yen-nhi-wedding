@@ -64,6 +64,9 @@
       <button class="admin-nav-tab" data-panel="servicesPanel">
         <i class="fa-solid fa-list-check"></i> Quản lý Dịch Vụ
       </button>
+      <button class="admin-nav-tab" data-panel="settingsPanel">
+        <i class="fa-solid fa-gears"></i> Cấu hình Website
+      </button>
     </div>
 
     <!-- ==========================================================
@@ -172,6 +175,65 @@
             <!-- Populated dynamically -->
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         PANEL 3: Website Settings
+         ========================================================== -->
+    <div id="settingsPanel" class="admin-panel hidden">
+      <div class="services-panel-header">
+        <h2>Cấu Hình Thông Tin Website</h2>
+      </div>
+
+      <div class="admin-services-wrapper" style="padding: 2rem; background: var(--bg-white);">
+        <form id="settingsForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 900px; margin: 0 auto;">
+          <div class="form-group col-span-2">
+            <label for="cfgSiteName" style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Tên Studio / Thương hiệu *</label>
+            <input type="text" id="cfgSiteName" required placeholder="Ví dụ: Yến Nhi Wedding" style="width: 100%; padding: 0.65rem 0.8rem; border: 1px solid var(--border-light); border-radius: 6px;">
+          </div>
+
+          <div class="form-group">
+            <label for="cfgHotlineInput" style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Số điện thoại hotline (Zalo) *</label>
+            <input type="text" id="cfgHotlineInput" required placeholder="Ví dụ: 0909.123.456 (Zalo)" style="width: 100%; padding: 0.65rem 0.8rem; border: 1px solid var(--border-light); border-radius: 6px;">
+          </div>
+
+          <div class="form-group">
+            <label for="cfgEmailInput" style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Địa chỉ Email *</label>
+            <input type="text" id="cfgEmailInput" required placeholder="Ví dụ: yennhiwedding@gmail.com" style="width: 100%; padding: 0.65rem 0.8rem; border: 1px solid var(--border-light); border-radius: 6px;">
+          </div>
+
+          <div class="form-group col-span-2">
+            <label for="cfgAddressInput" style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Địa chỉ văn phòng *</label>
+            <input type="text" id="cfgAddressInput" required placeholder="Ví dụ: Kiost số 17 Thống Nhất, Phường Phú Thọ Hoà, TP. Hồ Chí Minh" style="width: 100%; padding: 0.65rem 0.8rem; border: 1px solid var(--border-light); border-radius: 6px;">
+          </div>
+
+          <div class="form-group col-span-2">
+            <label for="cfgWorkingHoursInput" style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Thời gian làm việc *</label>
+            <input type="text" id="cfgWorkingHoursInput" required placeholder="Ví dụ: 07:00 - 21:00 (Tất cả các ngày trong tuần)" style="width: 100%; padding: 0.65rem 0.8rem; border: 1px solid var(--border-light); border-radius: 6px;">
+          </div>
+
+          <div class="form-group col-span-2">
+            <label for="cfgMapInput" style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Đường dẫn bản đồ Google Maps (mã nhúng iframe hoặc URL nhúng) *</label>
+            <textarea id="cfgMapInput" required rows="3" placeholder="Phát đường dẫn nhúng src='...' hoặc nguyên đoạn mã iframe..." style="width: 100%; padding: 0.65rem 0.8rem; border: 1px solid var(--border-light); border-radius: 6px; font-family: monospace; font-size: 0.85rem;"></textarea>
+          </div>
+
+          <div class="form-group col-span-2">
+            <label for="cfgFooterDescInput" style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Mô tả ngắn ở chân trang (Footer Description) *</label>
+            <textarea id="cfgFooterDescInput" required rows="3" placeholder="Ví dụ: Thương hiệu trang trí cưới hỏi trọn gói hàng đầu..." style="width: 100%; padding: 0.65rem 0.8rem; border: 1px solid var(--border-light); border-radius: 6px;"></textarea>
+          </div>
+
+          <div class="form-group col-span-2">
+            <label for="cfgFooterCopyrightInput" style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Dòng chữ bản quyền chân trang (Copyright HTML) *</label>
+            <input type="text" id="cfgFooterCopyrightInput" required placeholder="Ví dụ: &amp;copy; 2026 Yến Nhi Wedding Studio. Thiết kế và phát triển..." style="width: 100%; padding: 0.65rem 0.8rem; border: 1px solid var(--border-light); border-radius: 6px;">
+          </div>
+
+          <div class="col-span-2" style="display: flex; justify-content: flex-end; margin-top: 1rem; border-top: 1px solid var(--border-light); padding-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary" id="saveSettingsBtn">
+              <i class="fa-solid fa-save"></i> Lưu Cấu Hình
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

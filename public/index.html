@@ -28,7 +28,7 @@
   <header class="main-header">
     <div class="container header-container">
       <div class="logo">
-        <a href="/" class="logo-text">
+        <a href="/" class="logo-text" id="cfgLogoText">
           Yến Nhi <span class="logo-sub">Wedding</span>
         </a>
       </div>
@@ -196,7 +196,7 @@
               <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
               <div>
                 <h4>Hotline Tư Vấn</h4>
-                <p>0909.123.456 (Zalo)</p>
+                <p id="cfgHotline">0909.123.456 (Zalo)</p>
               </div>
             </div>
             
@@ -204,7 +204,7 @@
               <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
               <div>
                 <h4>Địa Chỉ Văn Phòng</h4>
-                <p>123 Đường Song Hỷ, Phường Yến Nhi, TP. Hồ Chí Minh</p>
+                <p id="cfgAddress">123 Đường Song Hỷ, Phường Yến Nhi, TP. Hồ Chí Minh</p>
               </div>
             </div>
             
@@ -212,9 +212,14 @@
               <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
               <div>
                 <h4>Giờ Làm Việc</h4>
-                <p>07:00 - 21:00 (Tất cả các ngày trong tuần)</p>
+                <p id="cfgWorkingHours">07:00 - 21:00 (Tất cả các ngày trong tuần)</p>
               </div>
             </div>
+          </div>
+          
+          <!-- Maps container -->
+          <div class="booking-map-wrapper" id="cfgMapWrapper" style="margin-top: 2rem; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); height: 250px;">
+            <!-- Google Maps iframe will render dynamically -->
           </div>
         </div>
 
@@ -278,8 +283,8 @@
   <footer class="main-footer" id="lien-he">
     <div class="container footer-grid">
       <div class="footer-col brand-col">
-        <h3 class="footer-logo">Yến Nhi <span class="logo-sub">Wedding</span></h3>
-        <p class="footer-desc">
+        <h3 class="footer-logo" id="cfgFooterLogo">Yến Nhi <span class="logo-sub">Wedding</span></h3>
+        <p class="footer-desc" id="cfgFooterDesc">
           Thương hiệu trang trí cưới hỏi trọn gói hàng đầu. Tận tâm - Uy tín - Tinh xảo trong từng khâu thiết kế phông màn gia tiên, cổng hoa cưới hỏi.
         </p>
         <div class="social-links">
@@ -314,15 +319,15 @@
 
       <div class="footer-col contact-col">
         <h4 class="footer-title">Thông Tin Liên Hệ</h4>
-        <p><i class="fa-solid fa-phone"></i> 0909.123.456 (Zalo)</p>
-        <p><i class="fa-solid fa-envelope"></i> yennhiwedding@gmail.com</p>
-        <p><i class="fa-solid fa-location-dot"></i> 123 Đường Song Hỷ, Phường Yến Nhi, TP. Hồ Chí Minh</p>
+        <p><i class="fa-solid fa-phone"></i> <span id="cfgFooterPhone">0909.123.456 (Zalo)</span></p>
+        <p><i class="fa-solid fa-envelope"></i> <span id="cfgFooterEmail">yennhiwedding@gmail.com</span></p>
+        <p><i class="fa-solid fa-location-dot"></i> <span id="cfgFooterAddress">123 Đường Song Hỷ, Phường Yến Nhi, TP. Hồ Chí Minh</span></p>
       </div>
     </div>
     
     <div class="footer-bottom">
       <div class="container bottom-container">
-        <p>&copy; 2026 Yến Nhi Wedding Studio. Thiết kế và phát triển trọn gói với màu đỏ may mắn.</p>
+        <p id="cfgFooterCopyright">&copy; 2026 Yến Nhi Wedding Studio. Thiết kế và phát triển trọn gói với màu đỏ may mắn.</p>
         <a href="#trang-chu" class="scroll-top-btn"><i class="fa-solid fa-arrow-up"></i></a>
       </div>
     </div>

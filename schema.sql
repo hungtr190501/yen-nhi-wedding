@@ -153,3 +153,9 @@ BEGIN
   (cat_xe_id, 'Thuê Xe 16 Chỗ Ford Transit Đưa Đón Họ', 'Dịch vụ cho thuê xe Transit 16 chỗ đời mới, máy lạnh êm ái để đưa đón đại gia đình nhà trai/nhà gái.', 2000000, 'ngày', 'https://atyvznsrzgnoaqfmvthp.supabase.co/storage/v1/object/public/uploads/serv_car_16.jpg', ARRAY['Thuê xe trọn gói trong ngày (dưới 100km)', 'Tài xế đón rước đúng giờ lịch sự cẩn thận', 'Xe đời mới ghế da êm ái, máy lạnh thổi mát rượi', 'Hỗ trợ dán chữ Song Hỷ trước xe'], false);
 
 END $$;
+
+-- Website Settings Table (Key-Value configuration)
+CREATE TABLE IF NOT EXISTS public.yn_settings (
+  key text PRIMARY KEY,
+  value text NOT NULL
+);

@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupNavbar();
   
   try {
+    // Load website settings first
+    await loadSettings();
+    
     // Load catalog data directly from our Express server API
     await loadCatalog();
   } catch (err) {
@@ -49,6 +52,110 @@ document.addEventListener('DOMContentLoaded', async () => {
     showError('Không thể kết nối đến cơ sở dữ liệu. Vui lòng kiểm tra môi trường hoặc thử lại.');
   }
 });
+
+// Load website settings configuration
+async function loadSettings() {
+  try {
+    const res = await fetch('/api/settings');
+    if (!res.ok) throw new Error('Không thể tải cấu hình website');
+    const settings = await res.json();
+    
+    // Update logo texts
+    const logoText = document.getElementById('cfgLogoText');
+    if (logoText) {
+      // Split site_name to add styling to the sub-word
+      const nameParts = (settings.site_name || 'Yến Nhi Wedding').split(' ');
+      if (nameParts.length > 1) {
+        const mainName = nameParts.slice(0, -1).join(' ');
+        const subName = nameParts[nameParts.length - 1];
+        logoText.innerHTML = `${mainName} <span class="logo-sub">${subName}</span>`;
+      } else {
+        logoText.innerHTML = `${settings.site_name || 'Yến Nhi'} <span class="logo-sub">Wedding</span>`;
+      }
+    }
+    
+    const footerLogo = document.getElementById('cfgFooterLogo');
+    if (footerLogo) {
+      const nameParts = (settings.site_name || 'Yến Nhi Wedding').split(' ');
+      if (nameParts.length > 1) {
+        const mainName = nameParts.slice(0, -1).join(' ');
+        const subName = nameParts[nameParts.length - 1];
+        footerLogo.innerHTML = `${mainName} <span class="logo-sub">${subName}</span>`;
+      } else {
+        footerLogo.innerHTML = `${settings.site_name || 'Yến Nhi'} <span class="logo-sub">Wedding</span>`;
+      }
+    }
+    
+    // Update contact details
+    const hotline = document.getElementById('cfgHotline');
+    if (hotline) hotline.textContent = settings.hotline || '0909.123.456 (Zalo)';
+    
+    const address = document.getElementById('cfgAddress');
+    if (address) address.textContent = settings.address || '';
+    
+    const workingHours = document.getElementById('cfgWorkingHours');
+    if (workingHours) workingHours.textContent = settings.working_hours || '';
+    
+    // Update footer details
+    const footerPhone = document.getElementById('cfgFooterPhone');
+    if (footerPhone) footerPhone.textContent = settings.hotline || '0909.123.456 (Zalo)';
+    
+    const footerEmail = document.getElementById('cfgFooterEmail');
+    if (footerEmail) footerEmail.textContent = settings.email || 'yennhiwedding@gmail.com';
+    
+    const footerAddress = document.getElementById('cfgFooterAddress');
+    if (footerAddress) footerAddress.textContent = settings.address || '';
+    
+    const footerDesc = document.getElementById('cfgFooterDesc');
+    if (footerDesc) footerDesc.textContent = settings.footer_desc || '';
+    
+    const footerCopyright = document.getElementById('cfgFooterCopyright');
+    if (footerCopyright) footerCopyright.innerHTML = settings.footer_copyright || '';
+    
+    // Load map iframe
+    const mapWrapper = document.getElementById('cfgMapWrapper');
+    if (mapWrapper && settings.map_iframe) {
+      const srcVal = settings.map_iframe.trim();
+      if (srcVal.startsWith('http://') || srcVal.startsWith('https://')) {
+        mapWrapper.innerHTML = `
+          <iframe 
+            src="${srcVal}" 
+            width="100%" 
+            height="100%" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        `;
+      } else if (srcVal.includes('<iframe')) {
+        // It's a full iframe tag, e.g. <iframe ...></iframe>
+        mapWrapper.innerHTML = srcVal;
+        const iframe = mapWrapper.querySelector('iframe');
+        if (iframe) {
+          iframe.setAttribute('width', '100%');
+          iframe.setAttribute('height', '100%');
+          iframe.style.border = '0';
+        }
+      } else {
+        // Assume Google Maps Embed Source URL without protocol or raw text
+        mapWrapper.innerHTML = `
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=${srcVal}" 
+            width="100%" 
+            height="100%" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        `;
+      }
+    }
+  } catch (err) {
+    console.error('Load settings failed:', err);
+  }
+}
 
 // Mobile navbar toggle
 function setupNavbar() {
