@@ -142,6 +142,25 @@ function renderServices(categoryId) {
       .map(f => `<li><i class="fa-solid fa-check"></i> ${f}</li>`)
       .join('');
 
+    // Calculate price HTML
+    let priceHtml = '';
+    if (service.discount_price) {
+      priceHtml = `
+        <span class="price-original-strike">${formatVND(Number(service.price))}</span>
+        <span class="price-discounted">${formatVND(Number(service.discount_price))}</span>
+        <span class="service-unit">/ ${service.unit}</span>
+      `;
+    } else {
+      priceHtml = `
+        ${formatVND(Number(service.price))} <span class="service-unit">/ ${service.unit}</span>
+      `;
+    }
+
+    // Calculate promo HTML
+    const promoHtml = service.promo_text
+      ? `<div class="service-promo-tag" title="Món quà đặc biệt"><i class="fa-solid fa-gift"></i> ${service.promo_text}</div>`
+      : '';
+
     html += `
       <div class="service-card" data-id="${service.id}">
         ${service.is_featured ? `<span class="service-badge">Phổ Biến</span>` : ''}
@@ -151,8 +170,9 @@ function renderServices(categoryId) {
         <div class="service-body">
           <h3 class="service-name">${service.name}</h3>
           <div class="service-price-tag">
-            ${formatVND(service.price)} <span class="service-unit">/ ${service.unit}</span>
+            ${priceHtml}
           </div>
+          ${promoHtml}
           <p class="service-desc">${service.description || 'Chưa có mô tả chi tiết cho gói này.'}</p>
           <ul class="service-features-list">
             ${featuresHtml}

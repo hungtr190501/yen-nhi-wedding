@@ -1,27 +1,57 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { Pool } = require('pg');
+const multer = require('multer');
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+// Setup uploads folder
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Multer disk storage config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'service-' + uniqueSuffix + ext);
+  }
+});
+const upload = multer({ storage: storage });
 
 // Setup database pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-pool.query('SELECT NOW()', (err, res) => {
+pool.query('SELECT NOW()', async (err, res) => {
   if (err) {
     console.error('[DATABASE] Error connecting to database:', err.message);
   } else {
     console.log('[DATABASE] Connected to database successfully at:', res.rows[0].now);
+    // Run schema migrations to add promotion/discount columns
+    try {
+      await pool.query('ALTER TABLE public.yn_services ADD COLUMN IF NOT EXISTS discount_price numeric;');
+      await pool.query('ALTER TABLE public.yn_services ADD COLUMN IF NOT EXISTS promo_text text;');
+      console.log('[DATABASE] Database schema migrations completed successfully.');
+    } catch (migrationErr) {
+      console.error('[DATABASE] Migration error:', migrationErr.message);
+    }
   }
 });
 
 // Middlewares
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(uploadsDir));
 
 // Fallback config route (for backwards compatibility/placeholder)
 app.get('/api/config', (req, res) => {
@@ -178,6 +208,97 @@ app.delete('/api/admin/bookings/:id', adminAuth, async (req, res) => {
     res.json({ success: true, message: 'Đã xóa booking thành công.' });
   } catch (err) {
     console.error('Error deleting booking:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin upload image endpoint
+app.post('/api/admin/upload', adminAuth, upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'Không có file nào được tải lên.' });
+  }
+  res.json({ success: true, url: `/uploads/${req.file.filename}` });
+});
+
+// Admin Create Service
+app.post('/api/admin/services', adminAuth, async (req, res) => {
+  const { category_id, name, description, price, discount_price, unit, image_url, features, is_featured, promo_text } = req.body;
+  if (!name || !price || !category_id) {
+    return res.status(400).json({ error: 'Thiếu thông tin dịch vụ bắt buộc.' });
+  }
+  try {
+    const query = `
+      INSERT INTO public.yn_services (category_id, name, description, price, discount_price, unit, image_url, features, is_featured, promo_text)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *;
+    `;
+    const result = await pool.query(query, [
+      category_id,
+      name,
+      description || null,
+      price,
+      discount_price || null,
+      unit || 'gói',
+      image_url || null,
+      features || [],
+      !!is_featured,
+      promo_text || null
+    ]);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error creating service:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin Update Service
+app.patch('/api/admin/services/:id', adminAuth, async (req, res) => {
+  const { id } = req.params;
+  const { category_id, name, description, price, discount_price, unit, image_url, features, is_featured, promo_text } = req.body;
+  if (!name || !price || !category_id) {
+    return res.status(400).json({ error: 'Thiếu thông tin dịch vụ bắt buộc.' });
+  }
+  try {
+    const query = `
+      UPDATE public.yn_services
+      SET category_id = $1, name = $2, description = $3, price = $4, discount_price = $5, unit = $6, image_url = $7, features = $8, is_featured = $9, promo_text = $10
+      WHERE id = $11
+      RETURNING *;
+    `;
+    const result = await pool.query(query, [
+      category_id,
+      name,
+      description || null,
+      price,
+      discount_price || null,
+      unit || 'gói',
+      image_url || null,
+      features || [],
+      !!is_featured,
+      promo_text || null,
+      id
+    ]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy dịch vụ.' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating service:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin Delete Service
+app.delete('/api/admin/services/:id', adminAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM public.yn_services WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy dịch vụ.' });
+    }
+    res.json({ success: true, message: 'Đã xóa dịch vụ thành công.' });
+  } catch (err) {
+    console.error('Error deleting service:', err);
     res.status(500).json({ error: err.message });
   }
 });

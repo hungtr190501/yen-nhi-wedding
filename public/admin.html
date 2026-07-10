@@ -56,77 +56,210 @@
       </div>
     </header>
 
-    <!-- Stat Dashboard Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
-        <div class="stat-content">
-          <h3>Tổng Đơn Đặt</h3>
-          <p id="statTotal">0</p>
+    <!-- Navigation Tabs -->
+    <div class="admin-nav-tabs">
+      <button class="admin-nav-tab active" data-panel="bookingsPanel">
+        <i class="fa-solid fa-calendar-check"></i> Quản lý Đặt Lịch
+      </button>
+      <button class="admin-nav-tab" data-panel="servicesPanel">
+        <i class="fa-solid fa-list-check"></i> Quản lý Dịch Vụ
+      </button>
+    </div>
+
+    <!-- ==========================================================
+         PANEL 1: Bookings Management
+         ========================================================== -->
+    <div id="bookingsPanel" class="admin-panel">
+      <!-- Stat Dashboard Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="stat-content">
+            <h3>Tổng Đơn Đặt</h3>
+            <p id="statTotal">0</p>
+          </div>
+        </div>
+        <div class="stat-card pending">
+          <div class="stat-icon"><i class="fa-solid fa-spinner fa-spin-slow"></i></div>
+          <div class="stat-content">
+            <h3>Chờ Xử Lý</h3>
+            <p id="statPending">0</p>
+          </div>
+        </div>
+        <div class="stat-card confirmed">
+          <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="stat-content">
+            <h3>Đã Xác Nhận</h3>
+            <p id="statConfirmed">0</p>
+          </div>
+        </div>
+        <div class="stat-card revenue">
+          <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+          <div class="stat-content">
+            <h3>Doanh Thu Dự Kiến</h3>
+            <p id="statRevenue">0 đ</p>
+          </div>
         </div>
       </div>
-      <div class="stat-card pending">
-        <div class="stat-icon"><i class="fa-solid fa-spinner fa-spin-slow"></i></div>
-        <div class="stat-content">
-          <h3>Chờ Xử Lý</h3>
-          <p id="statPending">0</p>
+
+      <!-- Booking Filters & Actions -->
+      <div class="admin-controls">
+        <div class="filter-tabs" id="statusFilterTabs">
+          <button class="filter-tab active" data-status="all">Tất cả (<span id="countAll">0</span>)</button>
+          <button class="filter-tab" data-status="pending">Chờ xử lý (<span id="countPending">0</span>)</button>
+          <button class="filter-tab" data-status="confirmed">Đã xác nhận (<span id="countConfirmed">0</span>)</button>
+          <button class="filter-tab" data-status="completed">Đã hoàn thành (<span id="countCompleted">0</span>)</button>
+          <button class="filter-tab" data-status="cancelled">Đã hủy (<span id="countCancelled">0</span>)</button>
+        </div>
+        
+        <div class="search-box-wrapper">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="adminSearchInput" placeholder="Tìm tên khách hàng hoặc SĐT...">
         </div>
       </div>
-      <div class="stat-card confirmed">
-        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
-        <div class="stat-content">
-          <h3>Đã Xác Nhận</h3>
-          <p id="statConfirmed">0</p>
-        </div>
-      </div>
-      <div class="stat-card revenue">
-        <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-        <div class="stat-content">
-          <h3>Doanh Thu Dự Kiến</h3>
-          <p id="statRevenue">0 đ</p>
+
+      <!-- Bookings Listing -->
+      <div class="bookings-table-wrapper">
+        <table class="bookings-table">
+          <thead>
+            <tr>
+              <th>Khách Hàng & Liên Hệ</th>
+              <th>Ngày & Địa Điểm</th>
+              <th>Dịch Vụ Chọn Thuê</th>
+              <th>Ghi Chú</th>
+              <th>Trạng Thái</th>
+              <th style="text-align: center;">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTableBody">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+        
+        <!-- Empty state -->
+        <div id="noBookingsMsg" class="no-bookings-card hidden">
+          <i class="fa-regular fa-folder-open"></i>
+          <p>Không tìm thấy lịch đặt nào phù hợp với bộ lọc hiện tại.</p>
         </div>
       </div>
     </div>
 
-    <!-- Booking Filters & Actions -->
-    <div class="admin-controls">
-      <div class="filter-tabs" id="statusFilterTabs">
-        <button class="filter-tab active" data-status="all">Tất cả (<span id="countAll">0</span>)</button>
-        <button class="filter-tab" data-status="pending">Chờ xử lý (<span id="countPending">0</span>)</button>
-        <button class="filter-tab" data-status="confirmed">Đã xác nhận (<span id="countConfirmed">0</span>)</button>
-        <button class="filter-tab" data-status="completed">Đã hoàn thành (<span id="countCompleted">0</span>)</button>
-        <button class="filter-tab" data-status="cancelled">Đã hủy (<span id="countCancelled">0</span>)</button>
+    <!-- ==========================================================
+         PANEL 2: Services Management
+         ========================================================== -->
+    <div id="servicesPanel" class="admin-panel hidden">
+      <div class="services-panel-header">
+        <h2>Quản Lý Danh Mục Dịch Vụ</h2>
+        <button id="addServiceBtn" class="btn btn-primary">
+          <i class="fa-solid fa-plus"></i> Thêm Dịch Vụ Mới
+        </button>
       </div>
-      
-      <div class="search-box-wrapper">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="adminSearchInput" placeholder="Tìm tên khách hàng hoặc SĐT...">
+
+      <!-- Services Grid -->
+      <div class="admin-services-wrapper">
+        <table class="admin-services-table">
+          <thead>
+            <tr>
+              <th>Hình Ảnh</th>
+              <th>Tên Dịch Vụ</th>
+              <th>Danh Mục</th>
+              <th>Đơn Giá & Khuyến Mãi</th>
+              <th>Đặc Điểm Nổi Bật</th>
+              <th style="text-align: center;">Hành Động</th>
+            </tr>
+          </thead>
+          <tbody id="adminServicesTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
       </div>
     </div>
+  </div>
 
-    <!-- Bookings Listing -->
-    <div class="bookings-table-wrapper">
-      <table class="bookings-table">
-        <thead>
-          <tr>
-            <th>Khách Hàng & Liên Hệ</th>
-            <th>Ngày & Địa Điểm</th>
-            <th>Dịch Vụ Chọn Thuê</th>
-            <th>Ghi Chú</th>
-            <th>Trạng Trạng</th>
-            <th style="text-align: center;">Thao Tác</th>
-          </tr>
-        </thead>
-        <tbody id="bookingsTableBody">
-          <!-- Dynamically populated rows -->
-        </tbody>
-      </table>
-      
-      <!-- Empty state -->
-      <div id="noBookingsMsg" class="no-bookings-card hidden">
-        <i class="fa-regular fa-folder-open"></i>
-        <p>Không tìm thấy lịch đặt nào phù hợp với bộ lọc hiện tại.</p>
+  <!-- ==========================================================
+       Service Add/Edit Modal overlay
+       ========================================================== -->
+  <div id="serviceModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modalTitle">Thêm Dịch Vụ Mới</h2>
+        <button class="modal-close-btn" id="closeServiceModalBtn">&times;</button>
       </div>
+      <form id="serviceForm">
+        <input type="hidden" id="srvId">
+        <div class="modal-form-grid">
+          
+          <div class="form-group">
+            <label for="srvName">Tên Dịch Vụ *</label>
+            <input type="text" id="srvName" required placeholder="Ví dụ: Gói Gia Tiên Hồng Ngọc">
+          </div>
+          
+          <div class="form-group">
+            <label for="srvCategory">Danh Mục *</label>
+            <select id="srvCategory" required>
+              <option value="">-- Chọn danh mục --</option>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="srvPrice">Đơn Giá Gốc (VND) *</label>
+            <input type="number" id="srvPrice" required min="0" placeholder="Ví dụ: 3500000">
+          </div>
+
+          <div class="form-group">
+            <label for="srvDiscountPrice">Đơn Giá Khuyến Mãi (VND)</label>
+            <input type="number" id="srvDiscountPrice" min="0" placeholder="Giá sau giảm, bỏ trống nếu không giảm">
+          </div>
+
+          <div class="form-group">
+            <label for="srvUnit">Đơn Vị Tính</label>
+            <input type="text" id="srvUnit" placeholder="Ví dụ: gói, chiếc, bộ, ngày..." value="gói">
+          </div>
+
+          <div class="form-group">
+            <label for="srvPromoText">Nội Dung Khuyến Mãi (Hiển thị nhãn quà tặng/tag)</label>
+            <input type="text" id="srvPromoText" placeholder="Ví dụ: Tặng mâm quả tráp hoa tươi, Giảm 10%...">
+          </div>
+          
+          <!-- Image Upload field -->
+          <div class="form-group col-span-2">
+            <label>Hình Ảnh Dịch Vụ *</label>
+            <div class="image-upload-wrapper">
+              <input type="file" id="srvImageFile" accept="image/*" class="hidden">
+              <button type="button" class="btn btn-outline btn-sm" id="uploadTriggerBtn">
+                <i class="fa-solid fa-upload"></i> Tải ảnh lên
+              </button>
+              <input type="text" id="srvImageUrl" placeholder="Hoặc đường dẫn URL hình ảnh...">
+            </div>
+            <div class="image-upload-preview mt-2">
+              <img id="srvImagePreview" src="" alt="Xem trước" class="hidden">
+            </div>
+          </div>
+
+          <!-- Dynamic Feature inputs list -->
+          <div class="form-group col-span-2">
+            <label>Các Đặc Điểm / Chi Tiết Gói Dịch Vụ</label>
+            <div id="srvFeaturesList" class="dynamic-inputs-list">
+              <!-- Dynamically added input rows -->
+            </div>
+            <button type="button" class="btn btn-outline btn-sm mt-2" id="addFeatureInputBtn">
+              <i class="fa-solid fa-plus"></i> Thêm đặc điểm mới
+            </button>
+          </div>
+
+          <!-- Options -->
+          <div class="form-group col-span-2 checkbox-group">
+            <input type="checkbox" id="srvIsFeatured">
+            <label for="srvIsFeatured">Đánh dấu dịch vụ nổi bật (Có nhãn "Phổ Biến")</label>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelServiceModalBtn">Hủy Bỏ</button>
+          <button type="submit" class="btn btn-primary" id="saveServiceBtn">Lưu Dịch Vụ</button>
+        </div>
+      </form>
     </div>
   </div>
 

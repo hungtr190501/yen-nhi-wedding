@@ -25,10 +25,12 @@ CREATE TABLE IF NOT EXISTS public.yn_services (
   name text NOT NULL,
   description text,
   price numeric NOT NULL,
+  discount_price numeric, -- Optional discounted price
   unit text DEFAULT 'gói', -- 'gói', 'ngày', 'bộ', 'chiếc'
   image_url text,
   features text[] DEFAULT '{}'::text[], -- List of what is included
   is_featured boolean DEFAULT false,
+  promo_text text, -- Optional promo text (e.g. "Tặng bia", "Free vận chuyển")
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
