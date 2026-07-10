@@ -41,6 +41,7 @@ const fallbackImages = {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
   setupNavbar();
+  setupMiniCartEvents();
   loadSelections();
   
   try {
@@ -198,11 +199,13 @@ function loadSelections() {
   }
   updateSelectedServicesUI();
   updateFloatingWidgetUI();
+  renderMiniCart();
 }
 
 // Save selections to localStorage
 function saveSelections() {
   localStorage.setItem('yn_selected_services', JSON.stringify(selectedServices));
+  renderMiniCart();
 }
 
 // Load categories, services, and combos from backend
@@ -413,11 +416,13 @@ function renderServiceCardHtml(service) {
   return `
     <div class="service-card animate-card" data-id="${service.id}">
       ${service.is_featured ? `<span class="service-badge">Phổ Biến</span>` : ''}
-      <div class="service-img-wrapper">
+      <div class="service-img-wrapper" onclick="window.location.href='/chi-tiet.html?id=${service.id}'" style="cursor: pointer;">
         <img class="service-img" src="${imgUrl}" alt="${service.name}" onerror="this.onerror=null; this.src='${fallbackImages[slug]}';">
       </div>
       <div class="service-body">
-        <h3 class="service-name">${service.name}</h3>
+        <h3 class="service-name">
+          <a href="/chi-tiet.html?id=${service.id}" style="color: inherit; text-decoration: none; transition: color 0.2s;">${service.name}</a>
+        </h3>
         <div class="service-price-tag">
           ${priceHtml}
         </div>
@@ -426,6 +431,13 @@ function renderServiceCardHtml(service) {
         <ul class="service-features-list">
           ${featuresHtml}
         </ul>
+        
+        <div style="margin-top: 0.5rem; margin-bottom: 1.25rem;">
+          <a href="/chi-tiet.html?id=${service.id}" style="color: var(--primary); font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+            Xem chi tiết bài viết <i class="fa-solid fa-arrow-right-long"></i>
+          </a>
+        </div>
+        
         <button class="btn btn-select btn-block ${isSelected ? 'selected' : ''}" onclick="toggleSelectService('${service.id}')">
           <i class="fa-solid ${isSelected ? 'fa-square-check' : 'fa-circle-plus'}"></i> 
           ${isSelected ? 'Đã Chọn Gói' : 'Chọn Dịch Vụ này'}
@@ -440,9 +452,11 @@ function renderComboCardHtml(combo) {
   const isSelected = selectedServices.some(s => s.id === combo.id);
   const imgUrl = combo.image_url || fallbackImages['gia-tien'];
 
-  const servicesListHtml = (combo.services || [])
-    .map(s => `<li><i class="fa-solid fa-circle-check"></i> ${s.name}</li>`)
-    .join('');
+  const chipsHtml = (combo.services || []).map(s => `
+    <span class="combo-service-chip" style="background-color: #fff5f5; border: 1px solid #ffcdd2; color: #b71c1c; font-size: 0.8rem; padding: 0.35rem 0.75rem; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap;">
+      <i class="fa-solid fa-circle-check" style="font-size: 0.75rem; color: var(--primary);"></i> ${s.name}
+    </span>
+  `).join('');
 
   const promoHtml = combo.promo_text
     ? `<div class="service-promo-tag" title="Ưu đãi combo" style="background-color: #ffebee; color: #c62828; border-left-color: #e53935;"><i class="fa-solid fa-gift"></i> ${combo.promo_text}</div>`
@@ -451,21 +465,33 @@ function renderComboCardHtml(combo) {
   return `
     <div class="service-card combo-card animate-card" data-id="${combo.id}" style="border: 2px solid #ffcdd2; background: #fffcfc;">
       <span class="service-badge" style="background-color: var(--primary); color: #fff;">GÓI COMBO</span>
-      <div class="service-img-wrapper">
+      <div class="service-img-wrapper" onclick="window.location.href='/chi-tiet.html?id=${combo.id}'" style="cursor: pointer;">
         <img class="service-img" src="${imgUrl}" alt="${combo.name}">
       </div>
       <div class="service-body">
-        <h3 class="service-name" style="font-family: var(--font-serif); font-size: 1.25rem;">${combo.name}</h3>
+        <h3 class="service-name" style="font-family: var(--font-serif); font-size: 1.25rem;">
+          <a href="/chi-tiet.html?id=${combo.id}" style="color: inherit; text-decoration: none; transition: color 0.2s;">${combo.name}</a>
+        </h3>
         <div class="service-price-tag">
           <span class="price-discounted">${formatVND(Number(combo.price))}</span>
           <span class="service-unit">/ trọn gói</span>
         </div>
         ${promoHtml}
         <p class="service-desc">${combo.description || 'Gói combo tiết kiệm đặc biệt từ Yến Nhi Wedding.'}</p>
-        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: 0.5px;">Bao gồm các gói dịch vụ:</div>
-        <ul class="service-features-list" style="margin-bottom: 1.5rem;">
-          ${servicesListHtml}
-        </ul>
+        
+        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: 0.5px;">Bao gồm các dịch vụ:</div>
+        
+        <!-- Spacious and responsive services chips layout -->
+        <div class="combo-services-chips-container" style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem;">
+          ${chipsHtml || '<span style="font-size:0.8rem; color:var(--text-muted);">Chưa liên kết dịch vụ.</span>'}
+        </div>
+        
+        <div style="margin-top: 0.5rem; margin-bottom: 1.25rem;">
+          <a href="/chi-tiet.html?id=${combo.id}" style="color: var(--primary); font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+            Xem chi tiết bài viết <i class="fa-solid fa-arrow-right-long"></i>
+          </a>
+        </div>
+        
         <button class="btn btn-select btn-block ${isSelected ? 'selected' : ''}" onclick="toggleSelectService('${combo.id}')">
           <i class="fa-solid ${isSelected ? 'fa-square-check' : 'fa-circle-plus'}"></i> 
           ${isSelected ? 'Đã Chọn Combo' : 'Chọn Combo Này'}
@@ -648,5 +674,74 @@ function showFormSuccess(message) {
     formStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } else {
     alert(message);
+  }
+}
+
+// Mini Cart Actions & Display Logic
+function setupMiniCartEvents() {
+  const headerCartBtn = document.getElementById('headerCartBtn');
+  const miniCartPanel = document.getElementById('miniCartPanel');
+  const closeMiniCartBtn = document.getElementById('closeMiniCartBtn');
+  
+  if (headerCartBtn && miniCartPanel) {
+    headerCartBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      miniCartPanel.classList.toggle('hidden');
+      renderMiniCart();
+    });
+  }
+  if (closeMiniCartBtn && miniCartPanel) {
+    closeMiniCartBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      miniCartPanel.classList.add('hidden');
+    });
+  }
+  
+  // Close on click outside
+  document.addEventListener('click', (e) => {
+    if (miniCartPanel && !miniCartPanel.classList.contains('hidden')) {
+      if (!miniCartPanel.contains(e.target) && !headerCartBtn.contains(e.target)) {
+        miniCartPanel.classList.add('hidden');
+      }
+    }
+  });
+}
+
+function renderMiniCart() {
+  const headerCount = document.getElementById('headerCartCount');
+  if (headerCount) {
+    headerCount.textContent = selectedServices.length;
+  }
+
+  const listContainer = document.getElementById('miniCartItemsList');
+  const totalText = document.getElementById('miniCartTotalText');
+  if (!listContainer) return;
+
+  if (selectedServices.length === 0) {
+    listContainer.innerHTML = `<div style="text-align:center; color: var(--text-muted); font-size: 0.85rem; padding: 1.5rem 0;">Giỏ hàng trống.</div>`;
+    if (totalText) totalText.textContent = '0 đ';
+    return;
+  }
+
+  let total = 0;
+  let html = '';
+  selectedServices.forEach(item => {
+    total += Number(item.price);
+    html += `
+      <div class="mini-cart-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px dashed var(--border-light); padding-bottom: 0.5rem; margin-bottom: 0.5rem; gap: 0.5rem;">
+        <div style="display:flex; flex-direction:column; gap:0.2rem;">
+          <span style="font-weight:600; color:var(--text-main); font-size:0.85rem; display:block; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</span>
+          <span style="color:var(--primary); font-size:0.8rem; font-weight:700;">${formatVND(Number(item.price))}</span>
+        </div>
+        <button class="mini-cart-item-remove" onclick="event.stopPropagation(); toggleSelectService('${item.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding: 0.25rem; transition:color 0.2s;" title="Xóa khỏi giỏ hàng">
+          <i class="fa-solid fa-trash-can" style="font-size:0.85rem;"></i>
+        </button>
+      </div>
+    `;
+  });
+
+  listContainer.innerHTML = html;
+  if (totalText) {
+    totalText.textContent = formatVND(total);
   }
 }

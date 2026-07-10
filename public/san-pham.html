@@ -57,6 +57,31 @@
       </nav>
       
       <div class="nav-actions">
+        <div class="header-cart-wrapper" style="position: relative; display: inline-block; margin-right: 1.25rem;">
+          <button class="header-cart-icon-btn" id="headerCartBtn" style="background: none; border: none; font-size: 1.35rem; color: var(--text-main); cursor: pointer; position: relative; display: flex; align-items: center; padding: 0.25rem;">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="headerCartCount" class="header-cart-count">0</span>
+          </button>
+          
+          <!-- Mini Cart Dropdown Panel -->
+          <div id="miniCartPanel" class="mini-cart-panel hidden">
+            <div class="mini-cart-header">
+              <h4>Giỏ Hàng Của Bạn</h4>
+              <button id="closeMiniCartBtn" style="background:none; border:none; cursor:pointer;">&times;</button>
+            </div>
+            <div id="miniCartItemsList" class="mini-cart-items-list">
+              <!-- Rendered dynamically -->
+            </div>
+            <div class="mini-cart-footer">
+              <div class="mini-cart-total">
+                <span>Tổng ước tính:</span>
+                <span id="miniCartTotalText">0 đ</span>
+              </div>
+              <a href="/#dat-lich" class="btn btn-primary btn-block btn-sm" id="miniCartCheckoutBtn">Đăng Ký Đặt Lịch</a>
+            </div>
+          </div>
+        </div>
+
         <a href="/#dat-lich" class="btn btn-primary btn-sm">Đặt Lịch Ngay</a>
         <button class="mobile-nav-toggle" id="mobileToggle" aria-label="Mở menu">
           <i class="fa-solid fa-bars"></i>

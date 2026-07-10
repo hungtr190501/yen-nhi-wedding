@@ -4,6 +4,8 @@ let allCategories = [];
 let allCombos = [];
 let activeFilter = 'all';
 let searchQuery = '';
+let srvSunEditor;
+let comboSunEditor;
 
 // DOM Elements
 const loginScreen = document.getElementById('loginScreen');
@@ -470,6 +472,57 @@ function renderAdminServices() {
 
 // Setup Service Modal listeners
 function setupServiceModal() {
+  if (typeof SUNEDITOR !== 'undefined') {
+    srvSunEditor = SUNEDITOR.create('srvContent', {
+      buttonList: [
+        ['undo', 'redo'],
+        ['font', 'fontSize', 'formatBlock'],
+        ['paragraphStyle', 'blockquote'],
+        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+        ['fontColor', 'hiliteColor', 'textStyle'],
+        ['removeFormat'],
+        ['outdent', 'indent'],
+        ['align', 'horizontalRule', 'list', 'lineHeight'],
+        ['table', 'link', 'image', 'video', 'audio'],
+        ['fullScreen', 'showBlocks', 'codeView'],
+        ['preview', 'print']
+      ],
+      width: '100%',
+      height: '300px',
+      defaultFont: 'Plus Jakarta Sans, sans-serif'
+    });
+
+    srvSunEditor.onImageUploadBefore = function (files, info, uploadHandler) {
+      const file = files[0];
+      const formData = new FormData();
+      formData.append('image', file);
+      const token = localStorage.getItem('yn_admin_token');
+
+      fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'x-admin-token': token },
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        const response = {
+          result: [
+            {
+              url: data.url,
+              name: file.name,
+              size: file.size
+            }
+          ]
+        };
+        uploadHandler(response);
+      })
+      .catch(err => {
+        uploadHandler(err.message);
+      });
+      return false;
+    };
+  }
+
   addServiceBtn.addEventListener('click', () => {
     openAddServiceModal();
   });
@@ -544,6 +597,8 @@ function setupServiceModal() {
       .map(input => input.value.trim())
       .filter(Boolean);
 
+    const content = (typeof srvSunEditor !== 'undefined' && srvSunEditor) ? srvSunEditor.getContents() : '';
+
     const payload = {
       category_id,
       name,
@@ -553,7 +608,8 @@ function setupServiceModal() {
       promo_text,
       image_url,
       features,
-      is_featured
+      is_featured,
+      content
     };
 
     const token = localStorage.getItem('yn_admin_token');
@@ -603,6 +659,10 @@ function openAddServiceModal() {
   srvImagePreview.classList.add('hidden');
   srvImagePreview.src = '';
   
+  if (typeof srvSunEditor !== 'undefined' && srvSunEditor) {
+    srvSunEditor.setContents('');
+  }
+  
   // Add 3 empty inputs for convenience
   addFeatureInputRow('');
   addFeatureInputRow('');
@@ -625,6 +685,10 @@ window.openEditServiceModal = function(id) {
   document.getElementById('srvPromoText').value = srv.promo_text || '';
   srvImageUrl.value = srv.image_url || '';
   document.getElementById('srvIsFeatured').checked = !!srv.is_featured;
+
+  if (typeof srvSunEditor !== 'undefined' && srvSunEditor) {
+    srvSunEditor.setContents(srv.content || '');
+  }
 
   if (srv.image_url) {
     srvImagePreview.src = srv.image_url;
@@ -821,6 +885,57 @@ function renderComboServicesSelection() {
 // Setup listeners for Combo Modal
 function setupComboModal() {
   if (!addComboBtn) return;
+
+  if (typeof SUNEDITOR !== 'undefined') {
+    comboSunEditor = SUNEDITOR.create('comboContent', {
+      buttonList: [
+        ['undo', 'redo'],
+        ['font', 'fontSize', 'formatBlock'],
+        ['paragraphStyle', 'blockquote'],
+        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+        ['fontColor', 'hiliteColor', 'textStyle'],
+        ['removeFormat'],
+        ['outdent', 'indent'],
+        ['align', 'horizontalRule', 'list', 'lineHeight'],
+        ['table', 'link', 'image', 'video', 'audio'],
+        ['fullScreen', 'showBlocks', 'codeView'],
+        ['preview', 'print']
+      ],
+      width: '100%',
+      height: '300px',
+      defaultFont: 'Plus Jakarta Sans, sans-serif'
+    });
+
+    comboSunEditor.onImageUploadBefore = function (files, info, uploadHandler) {
+      const file = files[0];
+      const formData = new FormData();
+      formData.append('image', file);
+      const token = localStorage.getItem('yn_admin_token');
+
+      fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'x-admin-token': token },
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        const response = {
+          result: [
+            {
+              url: data.url,
+              name: file.name,
+              size: file.size
+            }
+          ]
+        };
+        uploadHandler(response);
+      })
+      .catch(err => {
+        uploadHandler(err.message);
+      });
+      return false;
+    };
+  }
   
   addComboBtn.addEventListener('click', () => {
     openAddComboModal();
@@ -907,6 +1022,8 @@ function setupComboModal() {
       saveBtn.disabled = true;
       saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
 
+      const content = (typeof comboSunEditor !== 'undefined' && comboSunEditor) ? comboSunEditor.getContents() : '';
+
       const payload = {
         name,
         description: description || null,
@@ -914,6 +1031,7 @@ function setupComboModal() {
         promo_text: promo_text || null,
         image_url,
         is_featured,
+        content,
         service_ids
       };
 
@@ -960,6 +1078,10 @@ function openAddComboModal() {
   comboImagePreview.src = '';
   comboImageFile.value = '';
 
+  if (typeof comboSunEditor !== 'undefined' && comboSunEditor) {
+    comboSunEditor.setContents('');
+  }
+
   // Reset checkboxes
   allServices.forEach(srv => {
     const cb = document.getElementById(`cbSrv-${srv.id}`);
@@ -982,6 +1104,10 @@ window.openEditComboModal = function(id) {
   document.getElementById('comboPromoText').value = combo.promo_text || '';
   comboImageUrl.value = combo.image_url || '';
   document.getElementById('comboIsFeatured').checked = !!combo.is_featured;
+
+  if (typeof comboSunEditor !== 'undefined' && comboSunEditor) {
+    comboSunEditor.setContents(combo.content || '');
+  }
 
   if (combo.image_url) {
     comboImagePreview.src = combo.image_url;

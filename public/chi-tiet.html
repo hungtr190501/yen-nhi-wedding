@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi Tiết Dịch Vụ - Yến Nhi Wedding</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+  
+  <!-- Styling Sheet -->
+  <link rel="stylesheet" href="/style.css">
+  
+  <style>
+    /* Article details page specific styling */
+    .article-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2.5rem;
+      padding: 4rem 1rem;
+    }
+    .article-content {
+      background: #fff;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+    }
+    .article-body-text {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--text-main);
+    }
+    .article-body-text img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+      box-shadow: var(--shadow-sm);
+    }
+    .article-body-text h2, .article-body-text h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--primary);
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    .article-body-text p {
+      margin-bottom: 1.25rem;
+    }
+    .sidebar-sticky {
+      position: sticky;
+      top: 6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .booking-sidebar-card {
+      background: linear-gradient(135deg, #fffcfc 0%, #fff5f5 100%);
+      padding: 2rem;
+      border-radius: 16px;
+      border: 2px solid #ffcdd2;
+      box-shadow: var(--shadow-sm);
+    }
+    .related-section {
+      padding: 4rem 1rem;
+      background: #fffaf9;
+      border-top: 1px solid var(--border-light);
+    }
+    @media (max-width: 992px) {
+      .article-container {
+        grid-template-columns: 1fr;
+      }
+      .article-content {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="wedding-theme">
+
+  <!-- ==========================================================
+       1. Navigation Header
+       ========================================================== -->
+  <header class="main-header">
+    <div class="container header-container">
+      <div class="logo">
+        <a href="/" class="logo-text" id="cfgLogoText">
+          Yến Nhi <span class="logo-sub">Wedding</span>
+        </a>
+      </div>
+      
+      <nav class="nav-bar" id="navBar">
+        <a href="/#trang-chu" class="nav-link">Trang Chủ</a>
+        <a href="/san-pham.html" class="nav-link">Dịch Vụ & Combo</a>
+        <a href="/#album" class="nav-link">Album Ảnh</a>
+        <a href="/#dat-lich" class="nav-link">Đặt Lịch Thuê</a>
+        <a href="/#lien-he" class="nav-link">Liên Hệ</a>
+      </nav>
+      
+      <div class="nav-actions">
+        <div class="header-cart-wrapper" style="position: relative; display: inline-block; margin-right: 1.25rem;">
+          <button class="header-cart-icon-btn" id="headerCartBtn" style="background: none; border: none; font-size: 1.35rem; color: var(--text-main); cursor: pointer; position: relative; display: flex; align-items: center; padding: 0.25rem;">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="headerCartCount" class="header-cart-count">0</span>
+          </button>
+          
+          <!-- Mini Cart Dropdown Panel -->
+          <div id="miniCartPanel" class="mini-cart-panel hidden">
+            <div class="mini-cart-header">
+              <h4>Giỏ Hàng Của Bạn</h4>
+              <button id="closeMiniCartBtn" style="background:none; border:none; cursor:pointer;">&times;</button>
+            </div>
+            <div id="miniCartItemsList" class="mini-cart-items-list">
+              <!-- Rendered dynamically -->
+            </div>
+            <div class="mini-cart-footer">
+              <div class="mini-cart-total">
+                <span>Tổng ước tính:</span>
+                <span id="miniCartTotalText">0 đ</span>
+              </div>
+              <a href="/#dat-lich" class="btn btn-primary btn-block btn-sm" id="miniCartCheckoutBtn">Đăng Ký Đặt Lịch</a>
+            </div>
+          </div>
+        </div>
+
+        <a href="/#dat-lich" class="btn btn-primary btn-sm">Đặt Lịch Ngay</a>
+        <button class="mobile-nav-toggle" id="mobileToggle" aria-label="Mở menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================
+       2. Parallax Article Header Banner
+       ========================================================== -->
+  <section class="page-banner" id="articleBanner" style="background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200') no-repeat center center/cover; padding: 7rem 1rem 5rem 1rem; color: #fff; text-align: center;">
+    <div class="container" style="animation: fadeIn 0.8s ease-in-out;">
+      <span id="articleCategoryBadge" class="service-badge" style="background: var(--primary); color: #fff; display: inline-block; margin-bottom: 1rem; float: none;">DỊCH VỤ CƯỚI HỎI</span>
+      <h1 id="articleTitle" style="font-family: var(--font-serif); font-size: 2.8rem; line-height: 1.3; margin-bottom: 1rem; color: #fff;">Chi Tiết Gói Dịch Vụ</h1>
+      <div id="articlePriceTag" style="font-size: 1.5rem; font-weight: 700; color: #ffcdd2;">
+        <!-- Price populated dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       3. Main Layout Content
+       ========================================================== -->
+  <div class="container article-container">
+    
+    <!-- Left Column: Article content body -->
+    <main class="article-content">
+      <div id="articleContentBody" class="article-body-text">
+        <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải thông tin chi tiết dịch vụ...</div>
+      </div>
+    </main>
+    
+    <!-- Right Column: Booking prompt sidebar -->
+    <aside class="sidebar-sticky">
+      <div class="booking-sidebar-card">
+        <h3 style="font-family: var(--font-serif); color: var(--text-main); margin-bottom: 0.75rem; font-size: 1.3rem;">Đăng Ký Đặt Lịch</h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem;">
+          Bạn quan tâm đến gói trang trí này? Click nút bên dưới để chọn và gửi thông tin đặt lịch tư vấn, chúng tôi sẽ gọi lại ngay.
+        </p>
+        <button id="sidebarSelectBtn" class="btn btn-primary btn-block" style="font-weight: 700;">
+          <i class="fa-solid fa-circle-plus"></i> Chọn Dịch Vụ Này
+        </button>
+        <a href="/san-pham.html" class="btn btn-outline btn-block mt-2" style="text-align: center; display: block; font-size: 0.85rem;">
+          <i class="fa-solid fa-arrow-left"></i> Xem danh sách dịch vụ
+        </a>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ==========================================================
+       4. Related Articles Section
+       ========================================================== -->
+  <section class="related-section">
+    <div class="container">
+      <h2 style="font-family: var(--font-serif); font-size: 2rem; color: var(--text-main); text-align: center; margin-bottom: 2.5rem;">Bài Viết & Dịch Vụ Liên Quan</h2>
+      <div class="services-grid" id="relatedServicesGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       5. Floating Booking Summary Widget
+       ========================================================== -->
+  <div id="bookingFloatWidget" class="booking-float-widget hidden" style="position: fixed; bottom: 1.5rem; right: 1.5rem; background-color: var(--primary); color: var(--bg-white); padding: 0.8rem 1.5rem; border-radius: 50px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 1rem; z-index: 999; cursor: pointer;">
+    <div style="font-weight: 600;">
+      <i class="fa-solid fa-cart-shopping"></i> Đã chọn: <span id="floatSelectedCount">0</span> gói
+    </div>
+    <div style="width: 1px; height: 20px; background-color: rgba(255,255,255,0.3);"></div>
+    <a href="/#dat-lich" style="color: #fff; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;">
+      Đăng ký đặt lịch ngay <i class="fa-solid fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <!-- ==========================================================
+       6. Elegant Footer
+       ========================================================== -->
+  <footer class="main-footer" id="lien-he">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <h3 class="footer-logo" id="cfgFooterLogo">Yến Nhi <span class="logo-sub">Wedding</span></h3>
+        <p class="footer-desc" id="cfgFooterDesc">
+          Thương hiệu trang trí cưới hỏi trọn gói hàng đầu. Tận tâm - Uy tín - Tinh xảo trong từng khâu thiết kế phông màn gia tiên, cổng hoa cưới hỏi.
+        </p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="Youtube"><i class="fa-brands fa-youtube"></i></a>
+          <a href="#" aria-label="Tiktok"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4 class="footer-title">Dịch Vụ Cung Cấp</h4>
+        <ul class="footer-links">
+          <li><a href="/san-pham.html">Trang Trí Gia Tiên</a></li>
+          <li><a href="/san-pham.html">Cho Thuê Rạp Cưới</a></li>
+          <li><a href="/san-pham.html">Cổng Hoa Ngày Cưới</a></li>
+          <li><a href="/san-pham.html">Mâm Tráp Rồng Phượng</a></li>
+          <li><a href="/san-pham.html">Xe Hoa & Xe 16 Chỗ</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-title">Hỗ Trợ & Chính Sách</h4>
+        <ul class="footer-links">
+          <li><a href="/#lien-he">Liên Hệ Tư Vấn</a></li>
+          <li><a href="/#dat-lich">Đăng Ký Đặt Lịch</a></li>
+          <li><a href="/#album">Album Ảnh Cưới</a></li>
+          <li><a href="#">Bảo Mật Thông Tin</a></li>
+          <li><a href="#">Quy Trình Hoàn Tiền</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col contact-col">
+        <h4 class="footer-title">Thông Tin Liên Hệ</h4>
+        <p><i class="fa-solid fa-phone"></i> <span id="cfgFooterPhone">0909.123.456 (Zalo)</span></p>
+        <p><i class="fa-solid fa-envelope"></i> <span id="cfgFooterEmail">yennhiwedding@gmail.com</span></p>
+        <p><i class="fa-solid fa-location-dot"></i> <span id="cfgFooterAddress">123 Đường Song Hỷ, Phường Yến Nhi, TP. Hồ Chí Minh</span></p>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="container bottom-container">
+        <p id="cfgFooterCopyright">&copy; 2026 Yến Nhi Wedding Studio. Thiết kế và phát triển trọn gói với màu đỏ may mắn.</p>
+        <a href="#" class="scroll-top-btn"><i class="fa-solid fa-arrow-up"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App scripts logic -->
+  <script src="/app.js"></script>
+  <script>
+    // Details Loader script inline to speed up fetching detailed rich post
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (!id) {
+        document.getElementById('articleContentBody').innerHTML = `<p style="color:var(--primary); font-weight:700;">Không có mã dịch vụ hợp lệ.</p>`;
+        return;
+      }
+
+      try {
+        let details = null;
+        let isCombo = false;
+
+        // Fetch details from service or combo APIs
+        let res = await fetch(`/api/services/${id}`);
+        if (res.ok) {
+          details = await res.json();
+        } else {
+          res = await fetch(`/api/combos/${id}`);
+          if (res.ok) {
+            details = await res.json();
+            isCombo = true;
+          }
+        }
+
+        if (!details) {
+          throw new Error('Không tìm thấy thông tin chi tiết dịch vụ.');
+        }
+
+        // Render header details
+        document.getElementById('articleTitle').textContent = details.name;
+        document.title = details.name + ' - Yến Nhi Wedding';
+        
+        const badge = document.getElementById('articleCategoryBadge');
+        if (isCombo) {
+          badge.textContent = 'GÓI COMBO TRỌN GÓI';
+          badge.style.backgroundColor = '#2e7d32'; // dark green for combo
+        } else {
+          // Find category name
+          const catRes = await fetch('/api/categories');
+          if (catRes.ok) {
+            const categories = await catRes.json();
+            const cat = categories.find(c => c.id === details.category_id);
+            if (cat) badge.textContent = 'GÓI DỊCH VỤ ' + cat.name.toUpperCase();
+          }
+        }
+
+        // Format prices
+        const priceTag = document.getElementById('articlePriceTag');
+        if (details.discount_price) {
+          priceTag.innerHTML = `
+            <span style="text-decoration: line-through; opacity: 0.7; font-size: 1.1rem; margin-right: 0.5rem;">${formatVND(Number(details.price))}</span>
+            <span>${formatVND(Number(details.discount_price))} / ${details.unit}</span>
+          `;
+        } else {
+          priceTag.textContent = `${formatVND(Number(details.price))} / ${isCombo ? 'trọn gói' : details.unit}`;
+        }
+
+        // Render main banner image if provided
+        const imgUrl = details.image_url || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200';
+        document.getElementById('articleBanner').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.7)), url('${imgUrl}')`;
+
+        // Render main text content (WYSIWYG HTML)
+        const contentBox = document.getElementById('articleContentBody');
+        if (details.content && details.content.trim()) {
+          contentBox.innerHTML = details.content;
+        } else {
+          // Fallback if rich-text is not created yet
+          let fallbackHtml = `
+            <p style="font-size: 1.15rem; font-style: italic; color: var(--text-muted); margin-bottom: 2rem;">
+              ${details.description || 'Chưa có thông tin mô tả chi tiết cho gói này.'}
+            </p>
+          `;
+          if (details.features && details.features.length > 0) {
+            fallbackHtml += `
+              <h2>Các đặc điểm nổi bật bao gồm:</h2>
+              <ul>
+                ${details.features.map(f => `<li>${f}</li>`).join('')}
+              </ul>
+            `;
+          }
+          contentBox.innerHTML = fallbackHtml;
+        }
+
+        // Sidebar select trigger binding
+        const selectBtn = document.getElementById('sidebarSelectBtn');
+        const updateSidebarBtnState = () => {
+          const isSelected = selectedServices.some(s => s.id === details.id);
+          if (isSelected) {
+            selectBtn.className = 'btn btn-primary btn-block selected';
+            selectBtn.innerHTML = `<i class="fa-solid fa-square-check"></i> Đã Chọn Dịch Vụ`;
+          } else {
+            selectBtn.className = 'btn btn-primary btn-block';
+            selectBtn.innerHTML = `<i class="fa-solid fa-circle-plus"></i> Chọn Dịch Vụ Này`;
+          }
+        };
+
+        updateSidebarBtnState();
+        selectBtn.addEventListener('click', () => {
+          toggleSelectService(details.id);
+          updateSidebarBtnState();
+        });
+
+        // Load related articles/services in bottom grid
+        loadRelatedServices(details, isCombo);
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('articleContentBody').innerHTML = `
+          <div style="color:var(--primary); font-weight:700; text-align:center; padding: 3rem 0;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 2.5rem; margin-bottom: 1rem; display:block;"></i>
+            Lỗi tải dữ liệu: ${err.message}
+          </div>
+        `;
+      }
+    });
+
+    // Helper to fetch and display related services
+    async function loadRelatedServices(currentService, isCombo) {
+      const grid = document.getElementById('relatedServicesGrid');
+      if (!grid) return;
+
+      try {
+        let list = [];
+        if (isCombo) {
+          // Fetch combos
+          const res = await fetch('/api/combos');
+          if (res.ok) {
+            const combos = await res.json();
+            list = combos.filter(c => c.id !== currentService.id).slice(0, 3);
+          }
+        } else {
+          // Fetch services in same category
+          const res = await fetch('/api/services');
+          if (res.ok) {
+            const services = await res.json();
+            list = services
+              .filter(s => s.category_id === currentService.category_id && s.id !== currentService.id)
+              .slice(0, 3);
+          }
+        }
+
+        if (list.length === 0) {
+          grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color: var(--text-muted); font-style:italic;">Không có bài viết liên quan nào khác.</div>`;
+          return;
+        }
+
+        let html = '';
+        list.forEach(item => {
+          if (isCombo) {
+            html += renderComboCardHtml(item);
+          } else {
+            html += renderServiceCardHtml(item);
+          }
+        });
+        grid.innerHTML = html;
+
+      } catch (err) {
+        console.error('Load related failed:', err);
+      }
+    }
+  </script>
+</body>
+</html>

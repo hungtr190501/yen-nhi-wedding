@@ -43,6 +43,7 @@ pool.query('SELECT NOW()', async (err, res) => {
     try {
       await pool.query('ALTER TABLE public.yn_services ADD COLUMN IF NOT EXISTS discount_price numeric;');
       await pool.query('ALTER TABLE public.yn_services ADD COLUMN IF NOT EXISTS promo_text text;');
+      await pool.query('ALTER TABLE public.yn_services ADD COLUMN IF NOT EXISTS content text;');
       
       // Create settings table
       await pool.query(`
@@ -80,9 +81,11 @@ pool.query('SELECT NOW()', async (err, res) => {
           image_url text,
           is_featured boolean DEFAULT false,
           promo_text text,
+          content text,
           created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
         );
       `);
+      await pool.query('ALTER TABLE public.yn_combos ADD COLUMN IF NOT EXISTS content text;');
       await pool.query(`
         CREATE TABLE IF NOT EXISTS public.yn_combo_services (
           combo_id uuid REFERENCES public.yn_combos(id) ON DELETE CASCADE,
@@ -167,6 +170,55 @@ app.get('/api/services', async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching services:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get single service by id
+app.get('/api/services/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM public.yn_services WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy dịch vụ.' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching service details:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get single combo by id
+app.get('/api/combos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const query = `
+      SELECT c.*, 
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'id', s.id,
+                   'name', s.name,
+                   'price', s.price,
+                   'unit', s.unit
+                 )
+               ) FILTER (WHERE s.id IS NOT NULL),
+               '[]'::json
+             ) AS services
+      FROM public.yn_combos c
+      LEFT JOIN public.yn_combo_services cs ON c.id = cs.combo_id
+      LEFT JOIN public.yn_services s ON cs.service_id = s.id
+      WHERE c.id = $1
+      GROUP BY c.id;
+    `;
+    const result = await pool.query(query, [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy combo.' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching combo details:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -316,47 +368,14 @@ app.post('/api/admin/upload', adminAuth, (req, res) => {
 
 // Admin Create Service
 app.post('/api/admin/services', adminAuth, async (req, res) => {
-  const { category_id, name, description, price, discount_price, unit, image_url, features, is_featured, promo_text } = req.body;
+  const { category_id, name, description, price, discount_price, unit, image_url, features, is_featured, promo_text, content } = req.body;
   if (!name || !price || !category_id) {
     return res.status(400).json({ error: 'Thiếu thông tin dịch vụ bắt buộc.' });
   }
   try {
     const query = `
-      INSERT INTO public.yn_services (category_id, name, description, price, discount_price, unit, image_url, features, is_featured, promo_text)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      RETURNING *;
-    `;
-    const result = await pool.query(query, [
-      category_id,
-      name,
-      description || null,
-      price,
-      discount_price || null,
-      unit || 'gói',
-      image_url || null,
-      features || [],
-      !!is_featured,
-      promo_text || null
-    ]);
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error('Error creating service:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Admin Update Service
-app.patch('/api/admin/services/:id', adminAuth, async (req, res) => {
-  const { id } = req.params;
-  const { category_id, name, description, price, discount_price, unit, image_url, features, is_featured, promo_text } = req.body;
-  if (!name || !price || !category_id) {
-    return res.status(400).json({ error: 'Thiếu thông tin dịch vụ bắt buộc.' });
-  }
-  try {
-    const query = `
-      UPDATE public.yn_services
-      SET category_id = $1, name = $2, description = $3, price = $4, discount_price = $5, unit = $6, image_url = $7, features = $8, is_featured = $9, promo_text = $10
-      WHERE id = $11
+      INSERT INTO public.yn_services (category_id, name, description, price, discount_price, unit, image_url, features, is_featured, promo_text, content)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *;
     `;
     const result = await pool.query(query, [
@@ -370,6 +389,41 @@ app.patch('/api/admin/services/:id', adminAuth, async (req, res) => {
       features || [],
       !!is_featured,
       promo_text || null,
+      content || null
+    ]);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error creating service:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin Update Service
+app.patch('/api/admin/services/:id', adminAuth, async (req, res) => {
+  const { id } = req.params;
+  const { category_id, name, description, price, discount_price, unit, image_url, features, is_featured, promo_text, content } = req.body;
+  if (!name || !price || !category_id) {
+    return res.status(400).json({ error: 'Thiếu thông tin dịch vụ bắt buộc.' });
+  }
+  try {
+    const query = `
+      UPDATE public.yn_services
+      SET category_id = $1, name = $2, description = $3, price = $4, discount_price = $5, unit = $6, image_url = $7, features = $8, is_featured = $9, promo_text = $10, content = $11
+      WHERE id = $12
+      RETURNING *;
+    `;
+    const result = await pool.query(query, [
+      category_id,
+      name,
+      description || null,
+      price,
+      discount_price || null,
+      unit || 'gói',
+      image_url || null,
+      features || [],
+      !!is_featured,
+      promo_text || null,
+      content || null,
       id
     ]);
     if (result.rowCount === 0) {
@@ -445,7 +499,7 @@ app.get('/api/combos', async (req, res) => {
 
 // POST /api/admin/combos - Create combo bundle (Admin only)
 app.post('/api/admin/combos', adminAuth, async (req, res) => {
-  const { name, description, price, image_url, is_featured, promo_text, service_ids } = req.body;
+  const { name, description, price, image_url, is_featured, promo_text, content, service_ids } = req.body;
   if (!name || !price) {
     return res.status(400).json({ error: 'Tên và giá combo là bắt buộc.' });
   }
@@ -453,9 +507,9 @@ app.post('/api/admin/combos', adminAuth, async (req, res) => {
   try {
     await client.query('BEGIN');
     const comboRes = await client.query(
-      `INSERT INTO public.yn_combos (name, description, price, image_url, is_featured, promo_text)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [name, description || null, price, image_url || null, !!is_featured, promo_text || null]
+      `INSERT INTO public.yn_combos (name, description, price, image_url, is_featured, promo_text, content)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [name, description || null, price, image_url || null, !!is_featured, promo_text || null, content || null]
     );
     const combo = comboRes.rows[0];
     
@@ -481,7 +535,7 @@ app.post('/api/admin/combos', adminAuth, async (req, res) => {
 // PATCH /api/admin/combos/:id - Update combo bundle (Admin only)
 app.patch('/api/admin/combos/:id', adminAuth, async (req, res) => {
   const { id } = req.params;
-  const { name, description, price, image_url, is_featured, promo_text, service_ids } = req.body;
+  const { name, description, price, image_url, is_featured, promo_text, content, service_ids } = req.body;
   if (!name || !price) {
     return res.status(400).json({ error: 'Tên và giá combo là bắt buộc.' });
   }
@@ -490,9 +544,9 @@ app.patch('/api/admin/combos/:id', adminAuth, async (req, res) => {
     await client.query('BEGIN');
     const comboRes = await client.query(
       `UPDATE public.yn_combos
-       SET name = $1, description = $2, price = $3, image_url = $4, is_featured = $5, promo_text = $6
-       WHERE id = $7 RETURNING *`,
-      [name, description || null, price, image_url || null, !!is_featured, promo_text || null, id]
+       SET name = $1, description = $2, price = $3, image_url = $4, is_featured = $5, promo_text = $6, content = $7
+       WHERE id = $8 RETURNING *`,
+      [name, description || null, price, image_url || null, !!is_featured, promo_text || null, content || null, id]
     );
     if (comboRes.rowCount === 0) {
       return res.status(404).json({ error: 'Không tìm thấy combo.' });
