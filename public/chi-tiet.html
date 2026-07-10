@@ -359,6 +359,17 @@
           }
         };
 
+        // Ensure this item exists in global arrays so toggleSelectService can find it
+        if (isCombo) {
+          if (!allCombos.find(c => c.id === details.id)) {
+            allCombos.push(details);
+          }
+        } else {
+          if (!allServices.find(s => s.id === details.id)) {
+            allServices.push(details);
+          }
+        }
+
         updateSidebarBtnState();
         selectBtn.addEventListener('click', () => {
           toggleSelectService(details.id);

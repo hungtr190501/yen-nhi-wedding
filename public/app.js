@@ -503,12 +503,18 @@ function renderComboCardHtml(combo) {
 
 // Toggle Service or Combo Selection
 window.toggleSelectService = function(itemId) {
-  const service = allServices.find(s => s.id === itemId);
-  const combo = allCombos.find(c => c.id === itemId);
-  const item = service || combo;
+  let service = allServices.find(s => s.id === itemId);
+  let combo = allCombos.find(c => c.id === itemId);
+  let item = service || combo;
+
+  // Fallback: if arrays aren't populated (e.g. on chi-tiet.html), find item in selectedServices
+  if (!item) {
+    item = selectedServices.find(s => s.id === itemId);
+  }
   if (!item) return;
 
   const index = selectedServices.findIndex(s => s.id === itemId);
+  const wasAdded = index === -1;
   if (index > -1) {
     selectedServices.splice(index, 1);
   } else {
@@ -521,6 +527,11 @@ window.toggleSelectService = function(itemId) {
   // Refresh widgets
   updateSelectedServicesUI();
   updateFloatingWidgetUI();
+
+  // Animate the header cart icon on add
+  if (wasAdded) {
+    animateCartBounce();
+  }
   
   // Re-render matching cards on current layout
   const isCatalogPage = window.location.pathname.includes('san-pham.html');
@@ -528,10 +539,20 @@ window.toggleSelectService = function(itemId) {
     const activeTab = document.querySelector('#catalogCategoryTabs .tab-btn.active');
     const catId = activeTab ? activeTab.getAttribute('data-category') : 'all';
     renderCatalog(catId);
-  } else {
+  } else if (document.getElementById('categoryTabs')) {
     const activeTab = document.querySelector('#categoryTabs .tab-btn.active');
     const catId = activeTab ? activeTab.getAttribute('data-category') : 'all';
     renderHomepageServices(catId);
+  }
+
+  // Animate the clicked button itself for visual feedback
+  const clickedCard = document.querySelector(`.service-card[data-id="${itemId}"]`);
+  if (clickedCard) {
+    const btn = clickedCard.querySelector('.btn-select');
+    if (btn) {
+      btn.classList.add('btn-select-pop');
+      setTimeout(() => btn.classList.remove('btn-select-pop'), 400);
+    }
   }
 };
 
@@ -744,4 +765,33 @@ function renderMiniCart() {
   if (totalText) {
     totalText.textContent = formatVND(total);
   }
+}
+
+// Animate the header cart icon with a bounce + flash effect
+function animateCartBounce() {
+  const cartBtn = document.getElementById('headerCartBtn');
+  if (!cartBtn) return;
+  cartBtn.classList.add('cart-bounce');
+  setTimeout(() => cartBtn.classList.remove('cart-bounce'), 600);
+
+  // Also show a mini toast notification
+  showCartToast();
+}
+
+// Lightweight toast notification when items are added
+function showCartToast() {
+  let toast = document.getElementById('cartToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'cartToast';
+    toast.className = 'cart-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = `✓ Đã thêm vào giỏ hàng (${selectedServices.length} gói)`;
+  toast.classList.remove('cart-toast-hide');
+  toast.classList.add('cart-toast-show');
+  setTimeout(() => {
+    toast.classList.remove('cart-toast-show');
+    toast.classList.add('cart-toast-hide');
+  }, 2000);
 }

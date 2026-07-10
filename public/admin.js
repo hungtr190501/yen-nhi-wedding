@@ -589,6 +589,7 @@ function setupServiceModal() {
     const discount_price = discountPriceVal ? Number(discountPriceVal) : null;
     const unit = document.getElementById('srvUnit').value.trim();
     const promo_text = document.getElementById('srvPromoText').value.trim() || null;
+    const description = document.getElementById('srvDescriptionText').value.trim() || null;
     const image_url = srvImageUrl.value.trim() || null;
     const is_featured = document.getElementById('srvIsFeatured').checked;
 
@@ -602,6 +603,7 @@ function setupServiceModal() {
     const payload = {
       category_id,
       name,
+      description,
       price,
       discount_price,
       unit,
@@ -658,6 +660,7 @@ function openAddServiceModal() {
   srvFeaturesList.innerHTML = '';
   srvImagePreview.classList.add('hidden');
   srvImagePreview.src = '';
+  document.getElementById('srvDescriptionText').value = '';
   
   if (typeof srvSunEditor !== 'undefined' && srvSunEditor) {
     srvSunEditor.setContents('');
@@ -685,6 +688,7 @@ window.openEditServiceModal = function(id) {
   document.getElementById('srvPromoText').value = srv.promo_text || '';
   srvImageUrl.value = srv.image_url || '';
   document.getElementById('srvIsFeatured').checked = !!srv.is_featured;
+  document.getElementById('srvDescriptionText').value = srv.description || '';
 
   if (typeof srvSunEditor !== 'undefined' && srvSunEditor) {
     srvSunEditor.setContents(srv.content || '');

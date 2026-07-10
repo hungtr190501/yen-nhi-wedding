@@ -617,20 +617,7 @@ a {
   font-size: 0.8rem;
 }
 
-.btn-select {
-  background-color: var(--primary-light);
-  color: var(--primary);
-  border: 1px solid var(--border-light);
-}
-.btn-select:hover {
-  background-color: var(--primary);
-  color: var(--bg-white);
-}
-.btn-select.selected {
-  background-color: var(--success);
-  color: var(--bg-white);
-  border-color: var(--success);
-}
+/* btn-select styles are defined at bottom of file with animations */
 
 /* ==========================================================
    Customs Details Section
@@ -1991,13 +1978,7 @@ a {
   display: none !important;
 }
 
-.animate-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
-.animate-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
-}
+/* animate-card styles are defined at bottom of file with entrance animation */
 
 .teaser-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2135,5 +2116,142 @@ a {
   font-size: 0.9rem;
 }
 
+/* ================================================================
+   Cart Bounce Animation (header icon)
+   ================================================================ */
+@keyframes cartBounce {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.35); }
+  50% { transform: scale(0.9); }
+  75% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.cart-bounce {
+  animation: cartBounce 0.5s ease-in-out;
+}
+.cart-bounce .header-cart-count {
+  background-color: #2e7d32;
+  animation: cartBounce 0.5s ease-in-out;
+}
 
+/* ================================================================
+   Button Pop Animation (select/deselect button feedback)
+   ================================================================ */
+@keyframes btnSelectPop {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.92); }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.btn-select-pop {
+  animation: btnSelectPop 0.35s ease-out;
+}
 
+/* Selection button transition enhancements */
+.btn-select {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.btn-select:hover {
+  background-color: var(--primary);
+  color: var(--bg-white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.25);
+}
+.btn-select:active {
+  transform: scale(0.96);
+}
+.btn-select.selected {
+  background-color: var(--success);
+  color: var(--bg-white);
+  border-color: var(--success);
+}
+.btn-select.selected:hover {
+  background-color: #c62828;
+  border-color: #c62828;
+}
+
+/* ================================================================
+   Toast Notification (add-to-cart confirmation)
+   ================================================================ */
+.cart-toast {
+  position: fixed;
+  top: 5rem;
+  right: 1.5rem;
+  background: linear-gradient(135deg, #2e7d32, #388e3c);
+  color: #fff;
+  padding: 0.85rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  z-index: 10000;
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.35);
+  opacity: 0;
+  transform: translateX(100%);
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cart-toast-show {
+  opacity: 1;
+  transform: translateX(0);
+}
+.cart-toast-hide {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* ================================================================
+   Service Card hover image zoom
+   ================================================================ */
+.service-img-wrapper {
+  overflow: hidden;
+}
+.service-img {
+  transition: transform 0.4s ease;
+}
+.service-card:hover .service-img {
+  transform: scale(1.06);
+}
+
+/* Card entrance animation */
+@keyframes cardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-card {
+  animation: cardSlideUp 0.45s ease-out both;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.animate-card:nth-child(2) { animation-delay: 0.08s; }
+.animate-card:nth-child(3) { animation-delay: 0.16s; }
+.animate-card:nth-child(4) { animation-delay: 0.24s; }
+.animate-card:nth-child(5) { animation-delay: 0.32s; }
+.animate-card:nth-child(6) { animation-delay: 0.4s; }
+.animate-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Mobile toast positioning */
+@media (max-width: 768px) {
+  .cart-toast {
+    right: 0.75rem;
+    left: 0.75rem;
+    text-align: center;
+  }
+  .mini-cart-panel {
+    width: 290px;
+    right: -40px;
+  }
+}
