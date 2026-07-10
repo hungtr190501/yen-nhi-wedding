@@ -1,6 +1,7 @@
 let bookings = [];
 let allServices = [];
 let allCategories = [];
+let allCombos = [];
 let activeFilter = 'all';
 let searchQuery = '';
 
@@ -19,6 +20,19 @@ const filterTabs = document.getElementById('statusFilterTabs');
 const navTabs = document.querySelectorAll('.admin-nav-tab');
 const panels = document.querySelectorAll('.admin-panel');
 const adminServicesTableBody = document.getElementById('adminServicesTableBody');
+const adminCombosTableBody = document.getElementById('adminCombosTableBody');
+
+// Combo Modal elements
+const comboModal = document.getElementById('comboModal');
+const comboForm = document.getElementById('comboForm');
+const addComboBtn = document.getElementById('addComboBtn');
+const closeComboModalBtn = document.getElementById('closeComboModalBtn');
+const cancelComboModalBtn = document.getElementById('cancelComboModalBtn');
+const comboServicesSelectContainer = document.getElementById('comboServicesSelectContainer');
+const comboUploadTriggerBtn = document.getElementById('comboUploadTriggerBtn');
+const comboImageFile = document.getElementById('comboImageFile');
+const comboImageUrl = document.getElementById('comboImageUrl');
+const comboImagePreview = document.getElementById('comboImagePreview');
 
 // Service Modal elements
 const serviceModal = document.getElementById('serviceModal');
@@ -61,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   setupNavigation();
   setupServiceModal();
+  setupComboModal();
   setupSettingsPanel();
 });
 
@@ -178,7 +193,14 @@ async function loadCatalogData() {
     if (!srvRes.ok) throw new Error('Không thể tải danh sách dịch vụ.');
     allServices = await srvRes.json();
 
+    // 3. Fetch combos
+    const comboRes = await fetch('/api/combos');
+    if (!comboRes.ok) throw new Error('Không thể tải danh sách combo.');
+    allCombos = await comboRes.json();
+
     renderAdminServices();
+    renderAdminCombos();
+    renderComboServicesSelection();
   } catch (err) {
     console.error('Load catalog failed:', err);
   }
@@ -707,3 +729,297 @@ function setupSettingsPanel() {
     }
   });
 }
+
+// Render Combo table rows in Admin panel
+function renderAdminCombos() {
+  if (!adminCombosTableBody) return;
+  adminCombosTableBody.innerHTML = '';
+  
+  if (allCombos.length === 0) {
+    adminCombosTableBody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+          Chưa có gói Combo nào được tạo. Hãy click "Thêm Gói Combo Mới" để tạo!
+        </td>
+      </tr>`;
+    return;
+  }
+
+  allCombos.forEach(combo => {
+    const imgUrl = combo.image_url || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=150';
+    const promoHtml = combo.promo_text
+      ? `<div class="admin-srv-promo-badge"><i class="fa-solid fa-gift"></i> ${combo.promo_text}</div>`
+      : '';
+
+    const servicesList = (combo.services || [])
+      .map(s => `<li><i class="fa-solid fa-check"></i> ${s.name}</li>`)
+      .join('');
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="width: 100px;">
+        <img src="${imgUrl}" alt="${combo.name}" class="admin-srv-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=150';">
+      </td>
+      <td>
+        <div class="admin-srv-name">${combo.name}</div>
+        ${combo.is_featured ? '<span class="badge-featured">Nổi Bật</span>' : ''}
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+          ${combo.description || 'Chưa có mô tả ngắn.'}
+        </div>
+      </td>
+      <td>
+        <ul class="admin-srv-features-preview">
+          ${servicesList || '<li>Chưa chọn dịch vụ nào.</li>'}
+        </ul>
+      </td>
+      <td>
+        <div><strong style="color: var(--primary); font-size: 1.05rem;">${formatVND(Number(combo.price))}</strong></div>
+        ${promoHtml}
+      </td>
+      <td style="text-align: center; width: 180px;">
+        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+          <button class="btn btn-outline btn-sm" onclick="openEditComboModal('${combo.id}')" title="Sửa Combo">
+            <i class="fa-solid fa-pencil"></i> Sửa
+          </button>
+          <button class="btn btn-outline btn-sm btn-delete" onclick="deleteCombo('${combo.id}')" title="Xóa Combo" style="color: var(--primary);">
+            <i class="fa-solid fa-trash-can"></i> Xóa
+          </button>
+        </div>
+      </td>
+    `;
+    adminCombosTableBody.appendChild(tr);
+  });
+}
+
+// Render dynamic checkboxes of all services in Combo Modal
+function renderComboServicesSelection() {
+  if (!comboServicesSelectContainer) return;
+  comboServicesSelectContainer.innerHTML = '';
+  
+  if (allServices.length === 0) {
+    comboServicesSelectContainer.innerHTML = `<div style="font-size: 0.82rem; color: var(--text-muted); padding: 0.5rem;">Không có dịch vụ nào khả dụng để chọn.</div>`;
+    return;
+  }
+
+  allServices.forEach(srv => {
+    const div = document.createElement('div');
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.gap = '0.4rem';
+    div.style.marginBottom = '0.3rem';
+    
+    div.innerHTML = `
+      <input type="checkbox" id="cbSrv-${srv.id}" value="${srv.id}" style="width:16px; height:16px; cursor:pointer;">
+      <label for="cbSrv-${srv.id}" style="font-size: 0.82rem; cursor:pointer; font-weight: normal; color: var(--text-main); margin-bottom: 0;">
+        ${srv.name} (${formatVND(Number(srv.price))})
+      </label>
+    `;
+    comboServicesSelectContainer.appendChild(div);
+  });
+}
+
+// Setup listeners for Combo Modal
+function setupComboModal() {
+  if (!addComboBtn) return;
+  
+  addComboBtn.addEventListener('click', () => {
+    openAddComboModal();
+  });
+
+  const closeBtns = [closeComboModalBtn, cancelComboModalBtn];
+  closeBtns.forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', () => {
+        comboModal.classList.add('hidden');
+      });
+    }
+  });
+
+  // Combo Image Upload triggers
+  if (comboUploadTriggerBtn && comboImageFile) {
+    comboUploadTriggerBtn.addEventListener('click', () => {
+      comboImageFile.click();
+    });
+
+    comboImageFile.addEventListener('change', async () => {
+      const file = comboImageFile.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const token = localStorage.getItem('yn_admin_token');
+      comboUploadTriggerBtn.disabled = true;
+      comboUploadTriggerBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải...';
+
+      try {
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          headers: {
+            'x-admin-token': token
+          },
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Tải ảnh thất bại.');
+
+        comboImageUrl.value = data.url;
+        comboImagePreview.src = data.url;
+        comboImagePreview.classList.remove('hidden');
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        comboUploadTriggerBtn.disabled = false;
+        comboUploadTriggerBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Tải ảnh lên';
+      }
+    });
+  }
+
+  // Combo Form Submit
+  if (comboForm) {
+    comboForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const comboIdVal = document.getElementById('comboId').value;
+      const name = document.getElementById('comboName').value.trim();
+      const description = document.getElementById('comboDescription').value.trim();
+      const price = Number(document.getElementById('comboPrice').value);
+      const promo_text = document.getElementById('comboPromoText').value.trim();
+      const image_url = comboImageUrl.value.trim() || null;
+      const is_featured = document.getElementById('comboIsFeatured').checked;
+
+      // Extract checked service IDs
+      const service_ids = [];
+      allServices.forEach(srv => {
+        const cb = document.getElementById(`cbSrv-${srv.id}`);
+        if (cb && cb.checked) {
+          service_ids.push(srv.id);
+        }
+      });
+
+      if (service_ids.length === 0) {
+        alert('Vui lòng chọn ít nhất 1 dịch vụ thuộc Combo.');
+        return;
+      }
+
+      const saveBtn = document.getElementById('saveComboBtn');
+      const originalText = saveBtn.innerHTML;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+
+      const payload = {
+        name,
+        description: description || null,
+        price,
+        promo_text: promo_text || null,
+        image_url,
+        is_featured,
+        service_ids
+      };
+
+      const token = localStorage.getItem('yn_admin_token');
+      const method = comboIdVal ? 'PATCH' : 'POST';
+      const url = comboIdVal ? `/api/admin/combos/${comboIdVal}` : '/api/admin/combos';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-token': token
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Lưu thông tin Combo thất bại.');
+
+        comboModal.classList.add('hidden');
+        loadCatalogData();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+      }
+    });
+  }
+}
+
+// Open modal to add a brand new Combo
+function openAddComboModal() {
+  document.getElementById('comboModalTitle').textContent = 'Thêm Gói Combo Mới';
+  document.getElementById('comboId').value = '';
+  document.getElementById('comboName').value = '';
+  document.getElementById('comboDescription').value = '';
+  document.getElementById('comboPrice').value = '';
+  document.getElementById('comboPromoText').value = '';
+  comboImageUrl.value = '';
+  document.getElementById('comboIsFeatured').checked = false;
+
+  comboImagePreview.classList.add('hidden');
+  comboImagePreview.src = '';
+  comboImageFile.value = '';
+
+  // Reset checkboxes
+  allServices.forEach(srv => {
+    const cb = document.getElementById(`cbSrv-${srv.id}`);
+    if (cb) cb.checked = false;
+  });
+
+  comboModal.classList.remove('hidden');
+}
+
+// Open modal to edit existing Combo details
+window.openEditComboModal = function(id) {
+  const combo = allCombos.find(c => c.id === id);
+  if (!combo) return;
+
+  document.getElementById('comboModalTitle').textContent = 'Sửa Thông Tin Gói Combo';
+  document.getElementById('comboId').value = combo.id;
+  document.getElementById('comboName').value = combo.name;
+  document.getElementById('comboDescription').value = combo.description || '';
+  document.getElementById('comboPrice').value = Number(combo.price);
+  document.getElementById('comboPromoText').value = combo.promo_text || '';
+  comboImageUrl.value = combo.image_url || '';
+  document.getElementById('comboIsFeatured').checked = !!combo.is_featured;
+
+  if (combo.image_url) {
+    comboImagePreview.src = combo.image_url;
+    comboImagePreview.classList.remove('hidden');
+  } else {
+    comboImagePreview.classList.add('hidden');
+    comboImagePreview.src = '';
+  }
+  comboImageFile.value = '';
+
+  // Populate checkboxes
+  const selectedIds = (combo.services || []).map(s => s.id);
+  allServices.forEach(srv => {
+    const cb = document.getElementById(`cbSrv-${srv.id}`);
+    if (cb) {
+      cb.checked = selectedIds.includes(srv.id);
+    }
+  });
+
+  comboModal.classList.remove('hidden');
+};
+
+// Delete target combo
+window.deleteCombo = async function(id) {
+  if (!confirm('Bạn có chắc chắn muốn xóa gói Combo này?')) {
+    return;
+  }
+
+  const token = localStorage.getItem('yn_admin_token');
+  try {
+    const res = await fetch(`/api/admin/combos/${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-token': token }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Xóa combo thất bại.');
+    loadCatalogData();
+  } catch (err) {
+    alert(err.message);
+  }
+};

@@ -148,9 +148,10 @@
     </div>
 
     <!-- ==========================================================
-         PANEL 2: Services Management
+         PANEL 2: Services & Combos Management
          ========================================================== -->
     <div id="servicesPanel" class="admin-panel hidden">
+      <!-- Section 1: Services -->
       <div class="services-panel-header">
         <h2>Quản Lý Danh Mục Dịch Vụ</h2>
         <button id="addServiceBtn" class="btn btn-primary">
@@ -158,8 +159,7 @@
         </button>
       </div>
 
-      <!-- Services Grid -->
-      <div class="admin-services-wrapper">
+      <div class="admin-services-wrapper" style="margin-bottom: 3rem;">
         <table class="admin-services-table">
           <thead>
             <tr>
@@ -172,6 +172,31 @@
             </tr>
           </thead>
           <tbody id="adminServicesTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Section 2: Combos -->
+      <div class="services-panel-header" style="border-top: 1px solid var(--border-light); padding-top: 2rem; margin-top: 2rem;">
+        <h2>Quản Lý Gói Combo Trọn Gói</h2>
+        <button id="addComboBtn" class="btn btn-primary" style="background-color: var(--success); border-color: var(--success); box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);">
+          <i class="fa-solid fa-plus"></i> Thêm Gói Combo Mới
+        </button>
+      </div>
+
+      <div class="admin-services-wrapper">
+        <table class="admin-services-table">
+          <thead>
+            <tr>
+              <th>Hình Ảnh</th>
+              <th>Tên Combo</th>
+              <th>Dịch Vụ Bao Gồm</th>
+              <th>Giá Combo & Khuyến Mãi</th>
+              <th style="text-align: center;">Hành Động</th>
+            </tr>
+          </thead>
+          <tbody id="adminCombosTableBody">
             <!-- Populated dynamically -->
           </tbody>
         </table>
@@ -320,6 +345,77 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" id="cancelServiceModalBtn">Hủy Bỏ</button>
           <button type="submit" class="btn btn-primary" id="saveServiceBtn">Lưu Dịch Vụ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       Combo Add/Edit Modal overlay
+       ========================================================== -->
+  <div id="comboModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="comboModalTitle">Thêm Gói Combo Mới</h2>
+        <button class="modal-close-btn" id="closeComboModalBtn">&times;</button>
+      </div>
+      <form id="comboForm">
+        <input type="hidden" id="comboId">
+        <div class="modal-form-grid">
+          
+          <div class="form-group col-span-2">
+            <label for="comboName">Tên Gói Combo *</label>
+            <input type="text" id="comboName" required placeholder="Ví dụ: Combo Vàng (Gia tiên + Nhà rạp)">
+          </div>
+
+          <div class="form-group col-span-2">
+            <label for="comboDescription">Mô Tả Combo</label>
+            <textarea id="comboDescription" rows="2" placeholder="Nhập mô tả ngắn về gói Combo này..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="comboPrice">Giá Trọn Gói Combo (VND) *</label>
+            <input type="number" id="comboPrice" required min="0" placeholder="Ví dụ: 12000000">
+          </div>
+
+          <div class="form-group">
+            <label for="comboPromoText">Nội Dung Khuyến Mãi (Hiển thị nhãn quà tặng)</label>
+            <input type="text" id="comboPromoText" placeholder="Ví dụ: Tiết kiệm 1.5 triệu, Tặng xe hoa...">
+          </div>
+          
+          <!-- Image Upload field -->
+          <div class="form-group col-span-2">
+            <label>Hình Ảnh Đóng Gói Combo *</label>
+            <div class="image-upload-wrapper">
+              <input type="file" id="comboImageFile" accept="image/*" style="display: none;">
+              <button type="button" class="btn btn-outline btn-sm" id="comboUploadTriggerBtn">
+                <i class="fa-solid fa-upload"></i> Tải ảnh lên
+              </button>
+              <input type="text" id="comboImageUrl" placeholder="Đường dẫn URL hình ảnh...">
+            </div>
+            <div class="image-upload-preview mt-2">
+              <img id="comboImagePreview" src="" alt="Xem trước" class="hidden">
+            </div>
+          </div>
+
+          <!-- Services Checkboxes selection -->
+          <div class="form-group col-span-2">
+            <label style="font-weight: 700; margin-bottom: 0.5rem; display: block;">Chọn các gói dịch vụ thuộc Combo này *</label>
+            <div id="comboServicesSelectContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.5rem; max-height: 200px; overflow-y: auto; padding: 0.75rem; border: 1px solid var(--border-light); border-radius: 6px; background: #fffcfc;">
+              <!-- Checkboxes dynamically rendered -->
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="form-group col-span-2 checkbox-group">
+            <input type="checkbox" id="comboIsFeatured">
+            <label for="comboIsFeatured">Đánh dấu Combo nổi bật</label>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelComboModalBtn">Hủy Bỏ</button>
+          <button type="submit" class="btn btn-primary" id="saveComboBtn" style="background-color: var(--success); border-color: var(--success);">Lưu Combo</button>
         </div>
       </form>
     </div>

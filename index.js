@@ -4,6 +4,8 @@ const path = require('path');
 const fs = require('fs');
 const { Pool } = require('pg');
 const multer = require('multer');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -67,6 +69,27 @@ pool.query('SELECT NOW()', async (err, res) => {
         await pool.query(seedQuery);
         console.log('[DATABASE] Seeded default website settings.');
       }
+
+      // Create combos and combo-services tables
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS public.yn_combos (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          name text NOT NULL,
+          description text,
+          price numeric NOT NULL,
+          image_url text,
+          is_featured boolean DEFAULT false,
+          promo_text text,
+          created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+        );
+      `);
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS public.yn_combo_services (
+          combo_id uuid REFERENCES public.yn_combos(id) ON DELETE CASCADE,
+          service_id uuid REFERENCES public.yn_services(id) ON DELETE CASCADE,
+          PRIMARY KEY (combo_id, service_id)
+        );
+      `);
       
       console.log('[DATABASE] Database schema migrations completed successfully.');
     } catch (migrationErr) {
@@ -76,6 +99,44 @@ pool.query('SELECT NOW()', async (err, res) => {
 });
 
 // Middlewares
+app.disable('x-powered-by');
+
+// Security Headers setup with CSP adjustments for external resources
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com", "https://kit.fontawesome.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com", "https://kit.fontawesome.com"],
+      fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://ka-f.fontawesome.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "/uploads"],
+      connectSrc: ["'self'", "https://ka-f.fontawesome.com"],
+      frameSrc: ["'self'", "https://www.google.com"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// Rate limiter: 100 requests per 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // Increased slightly to prevent quick limit block on rapid resource fetches
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Bạn đã thực hiện quá nhiều yêu cầu. Vui lòng thử lại sau.' }
+});
+app.use(limiter);
+
+// Specific stricter rate limiter for booking creations & admin logins
+const strictLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Quá nhiều yêu cầu gửi lên. Vui lòng thử lại sau 15 phút.' }
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(uploadsDir));
@@ -111,7 +172,7 @@ app.get('/api/services', async (req, res) => {
 });
 
 // Create booking
-app.post('/api/bookings', async (req, res) => {
+app.post('/api/bookings', strictLimiter, async (req, res) => {
   const { id, customer_name, customer_phone, customer_email, event_date, event_address, notes, services } = req.body;
   if (!customer_name || !customer_phone || !event_date || !event_address) {
     return res.status(400).json({ error: 'Thiếu thông tin đặt lịch bắt buộc.' });
@@ -162,7 +223,7 @@ const adminAuth = (req, res, next) => {
 };
 
 // Admin Login
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', strictLimiter, (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
     res.json({ success: true, token: ADMIN_PASSWORD });
@@ -332,6 +393,144 @@ app.delete('/api/admin/services/:id', adminAuth, async (req, res) => {
     res.json({ success: true, message: 'Đã xóa dịch vụ thành công.' });
   } catch (err) {
     console.error('Error deleting service:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Mask detailed database errors in production to prevent leaking sensitive information
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function (data) {
+    if (res.statusCode >= 400 && data && data.error && process.env.NODE_ENV === 'production') {
+      const safeErrors = ['thiếu', 'không chính xác', 'quyền truy cập', 'không tìm thấy', 'quá nhiều', 'hủy bỏ', 'chọn'];
+      const isSafe = safeErrors.some(msg => data.error.toLowerCase().includes(msg.toLowerCase()));
+      if (!isSafe) {
+        data.error = 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.';
+      }
+    }
+    return originalJson.call(this, data);
+  };
+  next();
+});
+
+// GET /api/combos - Fetch all combos with constituent services
+app.get('/api/combos', async (req, res) => {
+  try {
+    const query = `
+      SELECT c.*, 
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'id', s.id,
+                   'name', s.name,
+                   'price', s.price,
+                   'unit', s.unit
+                 )
+               ) FILTER (WHERE s.id IS NOT NULL),
+               '[]'::json
+             ) AS services
+      FROM public.yn_combos c
+      LEFT JOIN public.yn_combo_services cs ON c.id = cs.combo_id
+      LEFT JOIN public.yn_services s ON cs.service_id = s.id
+      GROUP BY c.id
+      ORDER BY c.created_at DESC;
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching combos:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/combos - Create combo bundle (Admin only)
+app.post('/api/admin/combos', adminAuth, async (req, res) => {
+  const { name, description, price, image_url, is_featured, promo_text, service_ids } = req.body;
+  if (!name || !price) {
+    return res.status(400).json({ error: 'Tên và giá combo là bắt buộc.' });
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const comboRes = await client.query(
+      `INSERT INTO public.yn_combos (name, description, price, image_url, is_featured, promo_text)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [name, description || null, price, image_url || null, !!is_featured, promo_text || null]
+    );
+    const combo = comboRes.rows[0];
+    
+    if (service_ids && Array.isArray(service_ids) && service_ids.length > 0) {
+      for (const serviceId of service_ids) {
+        await client.query(
+          'INSERT INTO public.yn_combo_services (combo_id, service_id) VALUES ($1, $2)',
+          [combo.id, serviceId]
+        );
+      }
+    }
+    await client.query('COMMIT');
+    res.status(201).json(combo);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error creating combo:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// PATCH /api/admin/combos/:id - Update combo bundle (Admin only)
+app.patch('/api/admin/combos/:id', adminAuth, async (req, res) => {
+  const { id } = req.params;
+  const { name, description, price, image_url, is_featured, promo_text, service_ids } = req.body;
+  if (!name || !price) {
+    return res.status(400).json({ error: 'Tên và giá combo là bắt buộc.' });
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const comboRes = await client.query(
+      `UPDATE public.yn_combos
+       SET name = $1, description = $2, price = $3, image_url = $4, is_featured = $5, promo_text = $6
+       WHERE id = $7 RETURNING *`,
+      [name, description || null, price, image_url || null, !!is_featured, promo_text || null, id]
+    );
+    if (comboRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy combo.' });
+    }
+    const combo = comboRes.rows[0];
+    
+    // Sync services
+    await client.query('DELETE FROM public.yn_combo_services WHERE combo_id = $1', [id]);
+    if (service_ids && Array.isArray(service_ids) && service_ids.length > 0) {
+      for (const serviceId of service_ids) {
+        await client.query(
+          'INSERT INTO public.yn_combo_services (combo_id, service_id) VALUES ($1, $2)',
+          [id, serviceId]
+        );
+      }
+    }
+    await client.query('COMMIT');
+    res.json(combo);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error updating combo:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// DELETE /api/admin/combos/:id - Delete combo bundle (Admin only)
+app.delete('/api/admin/combos/:id', adminAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM public.yn_combos WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy combo.' });
+    }
+    res.json({ success: true, message: 'Đã xóa combo thành công.' });
+  } catch (err) {
+    console.error('Error deleting combo:', err);
     res.status(500).json({ error: err.message });
   }
 });

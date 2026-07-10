@@ -1,6 +1,6 @@
-let supabaseClient = null;
 let allCategories = [];
 let allServices = [];
+let allCombos = [];
 let selectedServices = [];
 
 // DOM Elements
@@ -14,10 +14,11 @@ const navBar = document.getElementById('navBar');
 
 // Formatting helper for currency (VND)
 function formatVND(value) {
+  if (value === null || value === undefined || isNaN(value)) return '0 đ';
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 }
 
-// UUID Generator for safe client-side ID assignment without RLS SELECT policy requirements
+// UUID Generator
 function generateUUID() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
@@ -29,7 +30,7 @@ function generateUUID() {
   });
 }
 
-// Fallback images if storage link is empty
+// Fallback images
 const fallbackImages = {
   'gia-tien': 'https://images.unsplash.com/photo-1549417229-aa67d3263c09?auto=format&fit=crop&q=80&w=600',
   'rap-cuoi': 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600',
@@ -40,16 +41,19 @@ const fallbackImages = {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
   setupNavbar();
+  loadSelections();
   
   try {
-    // Load website settings first
+    // Load configurations/settings
     await loadSettings();
     
     // Load catalog data directly from our Express server API
     await loadCatalog();
   } catch (err) {
     console.error('Initialization failed:', err);
-    showError('Không thể kết nối đến cơ sở dữ liệu. Vui lòng kiểm tra môi trường hoặc thử lại.');
+    if (servicesGrid) {
+      showError('Không thể kết nối đến cơ sở dữ liệu. Vui lòng kiểm tra môi trường hoặc thử lại.');
+    }
   }
 });
 
@@ -63,7 +67,6 @@ async function loadSettings() {
     // Update logo texts
     const logoText = document.getElementById('cfgLogoText');
     if (logoText) {
-      // Split site_name to add styling to the sub-word
       const nameParts = (settings.site_name || 'Yến Nhi Wedding').split(' ');
       if (nameParts.length > 1) {
         const mainName = nameParts.slice(0, -1).join(' ');
@@ -129,7 +132,7 @@ async function loadSettings() {
           </iframe>
         `;
       } else if (srcVal.includes('<iframe')) {
-        // It's a full iframe tag, e.g. <iframe ...></iframe>
+        // It's a full iframe tag
         mapWrapper.innerHTML = srcVal;
         const iframe = mapWrapper.querySelector('iframe');
         if (iframe) {
@@ -159,30 +162,50 @@ async function loadSettings() {
 
 // Mobile navbar toggle
 function setupNavbar() {
-  mobileToggle.addEventListener('click', () => {
-    navBar.classList.toggle('show');
-    const icon = mobileToggle.querySelector('i');
-    if (navBar.classList.contains('show')) {
-      icon.className = 'fa-solid fa-xmark';
-    } else {
-      icon.className = 'fa-solid fa-bars';
-    }
-  });
-
-  // Close menu when clicking nav link
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-      // Set active state
-      document.querySelectorAll('.nav-link').forEach(nl => nl.classList.remove('active'));
-      link.classList.add('active');
-      
-      navBar.classList.remove('show');
-      mobileToggle.querySelector('i').className = 'fa-solid fa-bars';
+  if (mobileToggle && navBar) {
+    mobileToggle.addEventListener('click', () => {
+      navBar.classList.toggle('show');
+      const icon = mobileToggle.querySelector('i');
+      if (navBar.classList.contains('show')) {
+        icon.className = 'fa-solid fa-xmark';
+      } else {
+        icon.className = 'fa-solid fa-bars';
+      }
     });
-  });
+
+    // Close menu when clicking nav link
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.nav-link').forEach(nl => nl.classList.remove('active'));
+        link.classList.add('active');
+        
+        navBar.classList.remove('show');
+        mobileToggle.querySelector('i').className = 'fa-solid fa-bars';
+      });
+    });
+  }
 }
 
-// Load categories & services from backend APIs
+// Load selections from localStorage
+function loadSelections() {
+  const saved = localStorage.getItem('yn_selected_services');
+  if (saved) {
+    try {
+      selectedServices = JSON.parse(saved);
+    } catch (e) {
+      selectedServices = [];
+    }
+  }
+  updateSelectedServicesUI();
+  updateFloatingWidgetUI();
+}
+
+// Save selections to localStorage
+function saveSelections() {
+  localStorage.setItem('yn_selected_services', JSON.stringify(selectedServices));
+}
+
+// Load categories, services, and combos from backend
 async function loadCatalog() {
   // Fetch categories
   const catRes = await fetch('/api/categories');
@@ -194,147 +217,263 @@ async function loadCatalog() {
   if (!servRes.ok) throw new Error('Không thể tải danh sách dịch vụ');
   allServices = await servRes.json();
 
-  // Render elements
-  renderCategoryTabs();
-  renderServices('all');
+  // Fetch combos
+  const comboRes = await fetch('/api/combos');
+  if (comboRes.ok) {
+    allCombos = await comboRes.json();
+  }
+
+  const isCatalogPage = window.location.pathname.includes('san-pham.html');
+  if (isCatalogPage) {
+    renderCatalogTabs();
+    renderCatalog('all');
+    setupCatalogSearch();
+  } else {
+    // If we are on the homepage, render the selection widget in case selections exist
+    updateSelectedServicesUI();
+  }
 }
 
-// Render dynamic filter tabs
-function renderCategoryTabs() {
-  let html = `<button class="tab-btn active" data-category="all">Tất cả</button>`;
+// Render tabs specifically for the separate Products Page
+function renderCatalogTabs() {
+  const tabsContainer = document.getElementById('catalogCategoryTabs');
+  if (!tabsContainer) return;
+
+  let html = `
+    <button class="tab-btn active" data-category="all">Tất cả</button>
+    <button class="tab-btn" data-category="combos"><i class="fa-solid fa-gift"></i> Gói Combo</button>
+  `;
   
   allCategories.forEach(cat => {
     html += `<button class="tab-btn" data-category="${cat.id}">${cat.name}</button>`;
   });
   
-  categoryTabs.innerHTML = html;
+  tabsContainer.innerHTML = html;
 
   // Add click handlers
-  categoryTabs.querySelectorAll('.tab-btn').forEach(btn => {
+  tabsContainer.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      categoryTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      tabsContainer.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       
       const catId = btn.getAttribute('data-category');
-      renderServices(catId);
+      renderCatalog(catId);
     });
   });
 }
 
-// Render service cards based on category filter
-function renderServices(categoryId) {
-  const filtered = categoryId === 'all' 
-    ? allServices 
-    : allServices.filter(s => s.category_id === categoryId);
-
-  if (filtered.length === 0) {
-    servicesGrid.innerHTML = `
-      <div class="loading-spinner" style="grid-column: 1/-1;">
-        <i class="fa-solid fa-circle-info"></i> Không tìm thấy dịch vụ nào thuộc danh mục này.
-      </div>`;
-    return;
+// Hook up search filter on Products page
+function setupCatalogSearch() {
+  const searchInput = document.getElementById('catalogSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const activeTab = document.querySelector('#catalogCategoryTabs .tab-btn.active');
+      const catId = activeTab ? activeTab.getAttribute('data-category') : 'all';
+      renderCatalog(catId);
+    });
   }
-
-  let html = '';
-  filtered.forEach(service => {
-    const isSelected = selectedServices.some(s => s.id === service.id);
-    const category = allCategories.find(c => c.id === service.category_id);
-    const slug = category ? category.slug : 'gia-tien';
-    
-    // Choose image: database field or fallback
-    const imgUrl = service.image_url || fallbackImages[slug] || fallbackImages['gia-tien'];
-    
-    // Create feature list items
-    const featuresHtml = (service.features || [])
-      .map(f => `<li><i class="fa-solid fa-check"></i> ${f}</li>`)
-      .join('');
-
-    // Calculate price HTML
-    let priceHtml = '';
-    if (service.discount_price) {
-      priceHtml = `
-        <span class="price-original-strike">${formatVND(Number(service.price))}</span>
-        <span class="price-discounted">${formatVND(Number(service.discount_price))}</span>
-        <span class="service-unit">/ ${service.unit}</span>
-      `;
-    } else {
-      priceHtml = `
-        ${formatVND(Number(service.price))} <span class="service-unit">/ ${service.unit}</span>
-      `;
-    }
-
-    // Calculate promo HTML
-    const promoHtml = service.promo_text
-      ? `<div class="service-promo-tag" title="Món quà đặc biệt"><i class="fa-solid fa-gift"></i> ${service.promo_text}</div>`
-      : '';
-
-    html += `
-      <div class="service-card" data-id="${service.id}">
-        ${service.is_featured ? `<span class="service-badge">Phổ Biến</span>` : ''}
-        <div class="service-img-wrapper">
-          <img class="service-img" src="${imgUrl}" alt="${service.name}" onerror="this.onerror=null; this.src='${fallbackImages[slug]}';">
-        </div>
-        <div class="service-body">
-          <h3 class="service-name">${service.name}</h3>
-          <div class="service-price-tag">
-            ${priceHtml}
-          </div>
-          ${promoHtml}
-          <p class="service-desc">${service.description || 'Chưa có mô tả chi tiết cho gói này.'}</p>
-          <ul class="service-features-list">
-            ${featuresHtml}
-          </ul>
-          <button class="btn btn-select btn-block ${isSelected ? 'selected' : ''}" onclick="toggleSelectService('${service.id}')">
-            <i class="fa-solid ${isSelected ? 'fa-square-check' : 'fa-circle-plus'}"></i> 
-            ${isSelected ? 'Đã Chọn Gói' : 'Chọn Dịch Vụ này'}
-          </button>
-        </div>
-      </div>
-    `;
-  });
-
-  servicesGrid.innerHTML = html;
 }
 
-// Select/Deselect service item toggle
-window.toggleSelectService = function(serviceId) {
-  const service = allServices.find(s => s.id === serviceId);
-  if (!service) return;
+// Render dynamic catalog list on separate Products page
+function renderCatalog(categoryId) {
+  const grid = document.getElementById('catalogServicesGrid');
+  if (!grid) return;
 
-  const index = selectedServices.findIndex(s => s.id === serviceId);
-  if (index > -1) {
-    // Remove
-    selectedServices.splice(index, 1);
-  } else {
-    // Add
-    selectedServices.push(service);
+  const searchInput = document.getElementById('catalogSearchInput');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  let filteredServices = allServices;
+  let filteredCombos = allCombos;
+
+  // 1. Filter by search query
+  if (query) {
+    filteredServices = allServices.filter(s => 
+      s.name.toLowerCase().includes(query) || 
+      (s.description && s.description.toLowerCase().includes(query))
+    );
+    filteredCombos = allCombos.filter(c => 
+      c.name.toLowerCase().includes(query) || 
+      (c.description && c.description.toLowerCase().includes(query))
+    );
   }
 
-  // Refresh lists
-  updateSelectedServicesUI();
+  // 2. Filter by category tab
+  let html = '';
+  if (categoryId === 'combos') {
+    if (filteredCombos.length === 0) {
+      html = `<div class="loading-spinner" style="grid-column: 1/-1;"><i class="fa-solid fa-circle-info"></i> Không tìm thấy Combo nào phù hợp.</div>`;
+    } else {
+      filteredCombos.forEach(combo => {
+        html += renderComboCardHtml(combo);
+      });
+    }
+  } else if (categoryId === 'all') {
+    if (filteredCombos.length === 0 && filteredServices.length === 0) {
+      html = `<div class="loading-spinner" style="grid-column: 1/-1;"><i class="fa-solid fa-circle-info"></i> Không tìm thấy gói dịch vụ cưới nào.</div>`;
+    } else {
+      filteredCombos.forEach(combo => {
+        html += renderComboCardHtml(combo);
+      });
+      filteredServices.forEach(srv => {
+        html += renderServiceCardHtml(srv);
+      });
+    }
+  } else {
+    // Show only specific category services
+    const catServices = filteredServices.filter(s => s.category_id === categoryId);
+    if (catServices.length === 0) {
+      html = `<div class="loading-spinner" style="grid-column: 1/-1;"><i class="fa-solid fa-circle-info"></i> Không tìm thấy dịch vụ nào thuộc danh mục này.</div>`;
+    } else {
+      catServices.forEach(srv => {
+        html += renderServiceCardHtml(srv);
+      });
+    }
+  }
+
+  grid.innerHTML = html;
+}
+
+// HTML builder for single services
+function renderServiceCardHtml(service) {
+  const isSelected = selectedServices.some(s => s.id === service.id);
+  const category = allCategories.find(c => c.id === service.category_id);
+  const slug = category ? category.slug : 'gia-tien';
+  const imgUrl = service.image_url || fallbackImages[slug] || fallbackImages['gia-tien'];
+
+  const featuresHtml = (service.features || [])
+    .map(f => `<li><i class="fa-solid fa-check"></i> ${f}</li>`)
+    .join('');
+
+  let priceHtml = '';
+  if (service.discount_price) {
+    priceHtml = `
+      <span class="price-original-strike">${formatVND(Number(service.price))}</span>
+      <span class="price-discounted">${formatVND(Number(service.discount_price))}</span>
+      <span class="service-unit">/ ${service.unit}</span>
+    `;
+  } else {
+    priceHtml = `
+      ${formatVND(Number(service.price))} <span class="service-unit">/ ${service.unit}</span>
+    `;
+  }
+
+  const promoHtml = service.promo_text
+    ? `<div class="service-promo-tag" title="Món quà đặc biệt"><i class="fa-solid fa-gift"></i> ${service.promo_text}</div>`
+    : '';
+
+  return `
+    <div class="service-card animate-card" data-id="${service.id}">
+      ${service.is_featured ? `<span class="service-badge">Phổ Biến</span>` : ''}
+      <div class="service-img-wrapper">
+        <img class="service-img" src="${imgUrl}" alt="${service.name}" onerror="this.onerror=null; this.src='${fallbackImages[slug]}';">
+      </div>
+      <div class="service-body">
+        <h3 class="service-name">${service.name}</h3>
+        <div class="service-price-tag">
+          ${priceHtml}
+        </div>
+        ${promoHtml}
+        <p class="service-desc">${service.description || 'Chưa có mô tả chi tiết cho gói này.'}</p>
+        <ul class="service-features-list">
+          ${featuresHtml}
+        </ul>
+        <button class="btn btn-select btn-block ${isSelected ? 'selected' : ''}" onclick="toggleSelectService('${service.id}')">
+          <i class="fa-solid ${isSelected ? 'fa-square-check' : 'fa-circle-plus'}"></i> 
+          ${isSelected ? 'Đã Chọn Gói' : 'Chọn Dịch Vụ này'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// HTML builder for combos
+function renderComboCardHtml(combo) {
+  const isSelected = selectedServices.some(s => s.id === combo.id);
+  const imgUrl = combo.image_url || fallbackImages['gia-tien'];
+
+  const servicesListHtml = (combo.services || [])
+    .map(s => `<li><i class="fa-solid fa-circle-check"></i> ${s.name}</li>`)
+    .join('');
+
+  const promoHtml = combo.promo_text
+    ? `<div class="service-promo-tag" title="Ưu đãi combo" style="background-color: #ffebee; color: #c62828; border-left-color: #e53935;"><i class="fa-solid fa-gift"></i> ${combo.promo_text}</div>`
+    : '';
+
+  return `
+    <div class="service-card combo-card animate-card" data-id="${combo.id}" style="border: 2px solid #ffcdd2; background: #fffcfc;">
+      <span class="service-badge" style="background-color: var(--primary); color: #fff;">GÓI COMBO</span>
+      <div class="service-img-wrapper">
+        <img class="service-img" src="${imgUrl}" alt="${combo.name}">
+      </div>
+      <div class="service-body">
+        <h3 class="service-name" style="font-family: var(--font-serif); font-size: 1.25rem;">${combo.name}</h3>
+        <div class="service-price-tag">
+          <span class="price-discounted">${formatVND(Number(combo.price))}</span>
+          <span class="service-unit">/ trọn gói</span>
+        </div>
+        ${promoHtml}
+        <p class="service-desc">${combo.description || 'Gói combo tiết kiệm đặc biệt từ Yến Nhi Wedding.'}</p>
+        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: 0.5px;">Bao gồm các gói dịch vụ:</div>
+        <ul class="service-features-list" style="margin-bottom: 1.5rem;">
+          ${servicesListHtml}
+        </ul>
+        <button class="btn btn-select btn-block ${isSelected ? 'selected' : ''}" onclick="toggleSelectService('${combo.id}')">
+          <i class="fa-solid ${isSelected ? 'fa-square-check' : 'fa-circle-plus'}"></i> 
+          ${isSelected ? 'Đã Chọn Combo' : 'Chọn Combo Này'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// Toggle Service or Combo Selection
+window.toggleSelectService = function(itemId) {
+  const service = allServices.find(s => s.id === itemId);
+  const combo = allCombos.find(c => c.id === itemId);
+  const item = service || combo;
+  if (!item) return;
+
+  const index = selectedServices.findIndex(s => s.id === itemId);
+  if (index > -1) {
+    selectedServices.splice(index, 1);
+  } else {
+    selectedServices.push(item);
+  }
+
+  // Save selections
+  saveSelections();
   
-  // Re-render services grid to update button states without layout resets
-  const activeTab = categoryTabs.querySelector('.tab-btn.active');
-  const activeCatId = activeTab ? activeTab.getAttribute('data-category') : 'all';
-  renderServices(activeCatId);
+  // Refresh widgets
+  updateSelectedServicesUI();
+  updateFloatingWidgetUI();
+  
+  // Re-render matching cards on current layout
+  const isCatalogPage = window.location.pathname.includes('san-pham.html');
+  if (isCatalogPage) {
+    const activeTab = document.querySelector('#catalogCategoryTabs .tab-btn.active');
+    const catId = activeTab ? activeTab.getAttribute('data-category') : 'all';
+    renderCatalog(catId);
+  }
 };
 
-// Update selection display inside the booking form
+// Update Selection Preview in Booking Form
 function updateSelectedServicesUI() {
+  if (!selectedItemsBox) return;
+
   if (selectedServices.length === 0) {
-    selectedItemsBox.innerHTML = `Chưa chọn dịch vụ nào. Hãy click "Thêm vào danh sách" trên các thẻ dịch vụ ở trên!`;
+    selectedItemsBox.innerHTML = `Chưa chọn dịch vụ nào. Hãy truy cập trang <a href="/san-pham.html" style="color: var(--primary); font-weight: 700;">Dịch Vụ & Combo</a> để chọn gói phù hợp.`;
     return;
   }
 
   let total = 0;
   let html = `<div style="display: flex; flex-wrap: wrap;">`;
   
-  selectedServices.forEach(service => {
-    total += Number(service.price);
+  selectedServices.forEach(item => {
+    total += Number(item.price);
     html += `
       <span class="selected-item-tag">
-        ${service.name} (${formatVND(service.price)})
-        <i class="fa-solid fa-circle-xmark" onclick="toggleSelectService('${service.id}')"></i>
+        ${item.name} (${formatVND(item.price)})
+        <i class="fa-solid fa-circle-xmark" onclick="toggleSelectService('${item.id}')"></i>
       </span>`;
   });
   
@@ -348,97 +487,113 @@ function updateSelectedServicesUI() {
   selectedItemsBox.innerHTML = html;
 }
 
-// Form Submission handling
-bookingForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+// Update Floating summary counts widget
+function updateFloatingWidgetUI() {
+  const widget = document.getElementById('bookingFloatWidget');
+  const countSpan = document.getElementById('floatSelectedCount');
+  if (!widget || !countSpan) return;
 
   if (selectedServices.length === 0) {
-    showFormError('Vui lòng chọn ít nhất một dịch vụ/gói thuê trước khi gửi.');
-    return;
+    widget.classList.add('hidden');
+  } else {
+    countSpan.textContent = selectedServices.length;
+    widget.classList.remove('hidden');
   }
+}
 
-  // Get values
-  const name = document.getElementById('custName').value.trim();
-  const phone = document.getElementById('custPhone').value.trim();
-  const email = document.getElementById('custEmail').value.trim();
-  const date = document.getElementById('eventDate').value;
-  const address = document.getElementById('eventAddress').value.trim();
-  const notes = document.getElementById('bookingNotes').value.trim();
+// Handle client-side booking submissions
+if (bookingForm) {
+  bookingForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  // Button state
-  const submitBtn = document.getElementById('submitBtn');
-  const origBtnText = submitBtn.innerHTML;
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi yêu cầu...`;
-
-  try {
-    const bookingId = generateUUID();
-
-    const bookingPayload = {
-      id: bookingId,
-      customer_name: name,
-      customer_phone: phone,
-      customer_email: email || null,
-      event_date: date,
-      event_address: address,
-      notes: notes || null,
-      services: selectedServices.map(s => s.id)
-    };
-
-    const response = await fetch('/api/bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(bookingPayload)
-    });
-
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || 'Lỗi không xác định khi lưu thông tin.');
+    if (selectedServices.length === 0) {
+      showFormError('Vui lòng chọn ít nhất một dịch vụ/gói cưới trước khi gửi.');
+      return;
     }
 
-    // Success styling
-    showFormSuccess('Gửi yêu cầu thành công! Chúng tôi sẽ liên hệ Zalo/Hotline của bạn sớm nhất.');
-    
-    // Clear selections & reset form
-    selectedServices = [];
-    updateSelectedServicesUI();
-    bookingForm.reset();
-    
-    // Refresh catalog grids
-    renderServices('all');
-    const allTab = categoryTabs.querySelector('[data-category="all"]');
-    if (allTab) {
-      categoryTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      allTab.classList.add('active');
-    }
-  } catch (err) {
-    console.error('Submit booking failed:', err);
-    showFormError('Lỗi lưu trữ: Không thể gửi yêu cầu của bạn. Chi tiết: ' + err.message);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = origBtnText;
-  }
-});
+    const name = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const email = document.getElementById('custEmail').value.trim();
+    const date = document.getElementById('eventDate').value;
+    const address = document.getElementById('eventAddress').value.trim();
+    const notes = document.getElementById('bookingNotes').value.trim();
 
-// UI Messages Helpers
+    const submitBtn = document.getElementById('submitBtn');
+    const origBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi yêu cầu...`;
+
+    try {
+      const bookingId = generateUUID();
+      const bookingPayload = {
+        id: bookingId,
+        customer_name: name,
+        customer_phone: phone,
+        customer_email: email || null,
+        event_date: date,
+        event_address: address,
+        notes: notes || null,
+        services: selectedServices.map(s => s.id)
+      };
+
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingPayload)
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Lỗi lưu trữ đặt lịch.');
+      }
+
+      showFormSuccess('Gửi yêu cầu thành công! Yến Nhi Wedding sẽ liên hệ lại Zalo/Hotline của bạn sớm nhất.');
+      
+      // Clear selections & storage
+      selectedServices = [];
+      saveSelections();
+      
+      updateSelectedServicesUI();
+      updateFloatingWidgetUI();
+      bookingForm.reset();
+    } catch (err) {
+      console.error('Submit booking failed:', err);
+      showFormError('Lỗi kết nối: ' + err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnText;
+    }
+  });
+}
+
+// UI Alert Messaging Helpers
 function showError(message) {
-  servicesGrid.innerHTML = `
-    <div class="loading-spinner" style="color: var(--primary); font-weight: 600; grid-column: 1/-1;">
-      <i class="fa-solid fa-circle-exclamation" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-      ${message}
-    </div>`;
+  const container = servicesGrid || document.getElementById('catalogServicesGrid');
+  if (container) {
+    container.innerHTML = `
+      <div class="loading-spinner" style="color: var(--primary); font-weight: 600; grid-column: 1/-1;">
+        <i class="fa-solid fa-circle-exclamation" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+        ${message}
+      </div>`;
+  }
 }
 
 function showFormError(message) {
-  formStatus.textContent = message;
-  formStatus.className = 'form-status error';
-  formStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (formStatus) {
+    formStatus.textContent = message;
+    formStatus.className = 'form-status error';
+    formStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    alert(message);
+  }
 }
 
 function showFormSuccess(message) {
-  formStatus.textContent = message;
-  formStatus.className = 'form-status success';
-  formStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (formStatus) {
+    formStatus.textContent = message;
+    formStatus.className = 'form-status success';
+    formStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    alert(message);
+  }
 }

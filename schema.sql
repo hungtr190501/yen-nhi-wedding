@@ -159,3 +159,22 @@ CREATE TABLE IF NOT EXISTS public.yn_settings (
   key text PRIMARY KEY,
   value text NOT NULL
 );
+
+-- Combos Table
+CREATE TABLE IF NOT EXISTS public.yn_combos (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  description text,
+  price numeric NOT NULL,
+  image_url text,
+  is_featured boolean DEFAULT false,
+  promo_text text,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Combo-Services Join Table
+CREATE TABLE IF NOT EXISTS public.yn_combo_services (
+  combo_id uuid REFERENCES public.yn_combos(id) ON DELETE CASCADE,
+  service_id uuid REFERENCES public.yn_services(id) ON DELETE CASCADE,
+  PRIMARY KEY (combo_id, service_id)
+);

@@ -455,6 +455,25 @@ a {
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 3.5rem;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .category-tabs {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.5rem 0.25rem;
+    scrollbar-width: none; /* Hide default scrollbar for Firefox */
+  }
+  .category-tabs::-webkit-scrollbar {
+    display: none; /* Hide default scrollbar for Chrome/Safari/Opera */
+  }
+  .category-tabs .tab-btn {
+    flex-shrink: 0;
+  }
 }
 
 .tab-btn {
@@ -1914,6 +1933,79 @@ a {
   .modal-card {
     max-height: 95vh;
   }
+}
+
+/* ==========================================================
+   Album & Gallery & Floating Selector Styles
+   ========================================================== */
+.gallery-grid {
+  margin-top: 2rem;
+}
+.gallery-item {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 320px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  cursor: pointer;
+}
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.gallery-item:hover img {
+  transform: scale(1.06);
+}
+.gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  padding: 1.5rem;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 60%;
+}
+.gallery-item:hover .gallery-overlay {
+  opacity: 1 !important;
+  transform: translateY(0);
+}
+
+.booking-float-widget {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.booking-float-widget:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(211, 47, 47, 0.4);
+}
+.booking-float-widget.hidden {
+  display: none !important;
+}
+
+.animate-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.animate-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.teaser-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.teaser-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--primary) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 

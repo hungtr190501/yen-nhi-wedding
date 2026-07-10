@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Allow: /san-pham.html
+Disallow: /admin
+Disallow: /api/admin/
+Disallow: /uploads/
