@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Yến Nhi Wedding</title>
+  
+  <!-- Google Fonts: Playfair Display & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="admin-body">
+
+  <!-- ==========================================================
+       Login Screen (shown if not authorized)
+       ========================================================== -->
+  <div id="loginScreen" class="admin-login-wrapper">
+    <div class="admin-login-card">
+      <div class="login-header">
+        <h2>Yến Nhi Wedding</h2>
+        <p>Bảng Điều Hành Admin</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="adminPassword">Mật Khẩu Quản Trị Viên</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="adminPassword" placeholder="Nhập mật khẩu..." required autocomplete="current-password">
+          </div>
+        </div>
+        <div id="loginError" class="login-error-msg hidden">Mật khẩu không chính xác, vui lòng thử lại.</div>
+        <button type="submit" class="btn btn-primary btn-block">Đăng Nhập</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       Admin Dashboard Interface (hidden by default)
+       ========================================================== -->
+  <div id="adminApp" class="admin-container hidden">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="logo">
+        <a href="/" class="logo-text">
+          Yến Nhi <span class="logo-sub">Wedding</span> <span class="badge-admin">Admin</span>
+        </a>
+      </div>
+      <div class="header-right">
+        <button id="logoutBtn" class="btn btn-outline btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+      </div>
+    </header>
+
+    <!-- Stat Dashboard Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+        <div class="stat-content">
+          <h3>Tổng Đơn Đặt</h3>
+          <p id="statTotal">0</p>
+        </div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-icon"><i class="fa-solid fa-spinner fa-spin-slow"></i></div>
+        <div class="stat-content">
+          <h3>Chờ Xử Lý</h3>
+          <p id="statPending">0</p>
+        </div>
+      </div>
+      <div class="stat-card confirmed">
+        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="stat-content">
+          <h3>Đã Xác Nhận</h3>
+          <p id="statConfirmed">0</p>
+        </div>
+      </div>
+      <div class="stat-card revenue">
+        <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+        <div class="stat-content">
+          <h3>Doanh Thu Dự Kiến</h3>
+          <p id="statRevenue">0 đ</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Filters & Actions -->
+    <div class="admin-controls">
+      <div class="filter-tabs" id="statusFilterTabs">
+        <button class="filter-tab active" data-status="all">Tất cả (<span id="countAll">0</span>)</button>
+        <button class="filter-tab" data-status="pending">Chờ xử lý (<span id="countPending">0</span>)</button>
+        <button class="filter-tab" data-status="confirmed">Đã xác nhận (<span id="countConfirmed">0</span>)</button>
+        <button class="filter-tab" data-status="completed">Đã hoàn thành (<span id="countCompleted">0</span>)</button>
+        <button class="filter-tab" data-status="cancelled">Đã hủy (<span id="countCancelled">0</span>)</button>
+      </div>
+      
+      <div class="search-box-wrapper">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="adminSearchInput" placeholder="Tìm tên khách hàng hoặc SĐT...">
+      </div>
+    </div>
+
+    <!-- Bookings Listing -->
+    <div class="bookings-table-wrapper">
+      <table class="bookings-table">
+        <thead>
+          <tr>
+            <th>Khách Hàng & Liên Hệ</th>
+            <th>Ngày & Địa Điểm</th>
+            <th>Dịch Vụ Chọn Thuê</th>
+            <th>Ghi Chú</th>
+            <th>Trạng Trạng</th>
+            <th style="text-align: center;">Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody id="bookingsTableBody">
+          <!-- Dynamically populated rows -->
+        </tbody>
+      </table>
+      
+      <!-- Empty state -->
+      <div id="noBookingsMsg" class="no-bookings-card hidden">
+        <i class="fa-regular fa-folder-open"></i>
+        <p>Không tìm thấy lịch đặt nào phù hợp với bộ lọc hiện tại.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>

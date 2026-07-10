@@ -93,6 +93,100 @@ app.post('/api/bookings', async (req, res) => {
   }
 });
 
+// Admin Authentication Middleware
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+const adminAuth = (req, res, next) => {
+  const token = req.headers['x-admin-token'];
+  if (token === ADMIN_PASSWORD) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Không có quyền truy cập.' });
+  }
+};
+
+// Admin Login
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  if (password === ADMIN_PASSWORD) {
+    res.json({ success: true, token: ADMIN_PASSWORD });
+  } else {
+    res.status(401).json({ error: 'Mật khẩu không chính xác.' });
+  }
+});
+
+// Admin Get all Bookings with items
+app.get('/api/admin/bookings', adminAuth, async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        b.id, b.customer_name, b.customer_phone, b.customer_email, b.event_date, b.event_address, b.notes, b.status, b.created_at,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', s.id,
+              'name', s.name,
+              'price', s.price,
+              'unit', s.unit
+            )
+          ) FILTER (WHERE s.id IS NOT NULL),
+          '[]'::json
+        ) AS services
+      FROM public.yn_bookings b
+      LEFT JOIN public.yn_booking_items bi ON b.id = bi.booking_id
+      LEFT JOIN public.yn_services s ON bi.service_id = s.id
+      GROUP BY b.id
+      ORDER BY b.created_at DESC;
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching admin bookings:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin Update booking status
+app.patch('/api/admin/bookings/:id/status', adminAuth, async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  if (!['pending', 'confirmed', 'completed', 'cancelled'].includes(status)) {
+    return res.status(400).json({ error: 'Trạng thái không hợp lệ.' });
+  }
+  try {
+    const result = await pool.query(
+      'UPDATE public.yn_bookings SET status = $1 WHERE id = $2 RETURNING *',
+      [status, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy booking.' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating booking status:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin Delete booking
+app.delete('/api/admin/bookings/:id', adminAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM public.yn_bookings WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy booking.' });
+    }
+    res.json({ success: true, message: 'Đã xóa booking thành công.' });
+  } catch (err) {
+    console.error('Error deleting booking:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Serve Admin Panel Frontend Page explicitly
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 // Serve frontend for all pages (fallback for SPA routing)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

@@ -29,6 +29,7 @@ services:
     environment:
       PORT: 3001
       DATABASE_URL: postgres://postgres:postgres@db:5432/yen_nhi_wedding
+      ADMIN_PASSWORD: admin
     depends_on:
       db:
         condition: service_healthy
