@@ -416,13 +416,13 @@ function renderAdminServices() {
       <td style="color: var(--text-muted);">${categoryName}</td>
       <td>${priceHtml}</td>
       <td>${featuresHtml}</td>
-      <td style="text-align: center; width: 120px;">
+      <td style="text-align: center; width: 180px;">
         <div style="display: flex; gap: 0.5rem; justify-content: center;">
           <button class="btn btn-outline btn-sm" onclick="openEditServiceModal('${srv.id}')" title="Sửa dịch vụ">
-            <i class="fa-solid fa-pencil"></i>
+            <i class="fa-solid fa-pencil"></i> Sửa
           </button>
           <button class="btn btn-outline btn-sm btn-delete" onclick="deleteService('${srv.id}')" title="Xóa dịch vụ" style="color: var(--primary);">
-            <i class="fa-solid fa-trash-can"></i>
+            <i class="fa-solid fa-trash-can"></i> Xóa
           </button>
         </div>
       </td>

@@ -213,11 +213,17 @@ app.delete('/api/admin/bookings/:id', adminAuth, async (req, res) => {
 });
 
 // Admin upload image endpoint
-app.post('/api/admin/upload', adminAuth, upload.single('image'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'Không có file nào được tải lên.' });
-  }
-  res.json({ success: true, url: `/uploads/${req.file.filename}` });
+app.post('/api/admin/upload', adminAuth, (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('[UPLOAD ERROR]', err);
+      return res.status(500).json({ error: 'Không thể upload ảnh: ' + err.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'Không có file nào được tải lên.' });
+    }
+    res.json({ success: true, url: `/uploads/${req.file.filename}` });
+  });
 });
 
 // Admin Create Service
